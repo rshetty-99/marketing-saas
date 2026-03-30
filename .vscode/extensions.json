@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "anthropic.claude-code",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "firefox-devtools.vscode-firefox-debug",
+    "ms-playwright.playwright",
+    "toba.vsfire",
+    "eamodio.gitlens"
+  ]
+}

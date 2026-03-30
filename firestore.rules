@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+ 
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+ 
+    function isWorkspaceMember(workspaceId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/workspace_members/$(request.auth.uid + '_' + workspaceId));
+    }
+ 
+    function hasRole(workspaceId, role) {
+      return isWorkspaceMember(workspaceId) &&
+        get(/databases/$(database)/documents/workspace_members/$(request.auth.uid + '_' + workspaceId)).data.role == role;
+    }
+ 
+    // Workspaces
+    match /workspaces/{workspaceId} {
+      allow read: if isWorkspaceMember(workspaceId);
+      allow create: if isAuthenticated();
+      allow update, delete: if hasRole(workspaceId, 'owner');
+    }
+ 
+    // Workspace members
+    match /workspace_members/{memberId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if isWorkspaceMember(resource.data.workspaceId);
+    }
+ 
+    // Feature collections — workspace-scoped pattern
+    match /content_drafts/{docId} {
+      allow read: if isWorkspaceMember(resource.data.workspaceId);
+      allow create: if isWorkspaceMember(request.resource.data.workspaceId);
+      allow update, delete: if isWorkspaceMember(resource.data.workspaceId);
+    }
+ 
+    match /brand_profiles/{docId} {
+      allow read: if isWorkspaceMember(resource.data.workspaceId);
+      allow create: if isWorkspaceMember(request.resource.data.workspaceId);
+      allow update, delete: if isWorkspaceMember(resource.data.workspaceId);
+    }
+ 
+    // Public endpoints (no auth required)
+    match /leads/{docId} {
+      allow create: if true;  // Public form submissions
+      allow read, update, delete: if isWorkspaceMember(resource.data.workspaceId);
+    }
+ 
+    // Add remaining collections following same workspace-scoped pattern:
+    // repurposed_content, publish_jobs, calendar_events, analytics_snapshots,
+    // approvals, social_connections, seo_reports, email_campaigns,
+    // subscriber_lists, crm_forms, generated_images, clients,
+    // client_reports, listening_configs, listening_feeds
+  }
+}
