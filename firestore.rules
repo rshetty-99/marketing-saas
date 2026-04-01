@@ -1,57 +1,179 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
- 
+
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
- 
+
+    function getMember(workspaceId) {
+      return get(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid));
+    }
+
     function isWorkspaceMember(workspaceId) {
       return isAuthenticated() &&
-        exists(/databases/$(database)/documents/workspace_members/$(request.auth.uid + '_' + workspaceId));
+        exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid)) &&
+        getMember(workspaceId).data.status == 'active';
     }
- 
+
+    function getRole(workspaceId) {
+      return getMember(workspaceId).data.role;
+    }
+
     function hasRole(workspaceId, role) {
+      return isWorkspaceMember(workspaceId) && getRole(workspaceId) == role;
+    }
+
+    function hasMinRole(workspaceId, minRole) {
       return isWorkspaceMember(workspaceId) &&
-        get(/databases/$(database)/documents/workspace_members/$(request.auth.uid + '_' + workspaceId)).data.role == role;
+        roleLevel(getRole(workspaceId)) >= roleLevel(minRole);
     }
- 
-    // Workspaces
-    match /workspaces/{workspaceId} {
-      allow read: if isWorkspaceMember(workspaceId);
+
+    function roleLevel(role) {
+      return role == 'owner' ? 5
+        : role == 'admin' ? 4
+        : role == 'manager' ? 3
+        : role == 'editor' ? 2
+        : role == 'viewer' ? 1
+        : 0;
+    }
+
+    // Platform role helpers
+    function isPlatformUser() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/platform_users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/platform_users/$(request.auth.uid)).data.status == 'active';
+    }
+
+    function getPlatformRole() {
+      return get(/databases/$(database)/documents/platform_users/$(request.auth.uid)).data.role;
+    }
+
+    function hasMinPlatformRole(minRole) {
+      return isPlatformUser() &&
+        platformRoleLevel(getPlatformRole()) >= platformRoleLevel(minRole);
+    }
+
+    function platformRoleLevel(role) {
+      return role == 'super_admin' ? 7
+        : role == 'platform_admin' ? 6
+        : role == 'partner_manager' ? 5
+        : role == 'operations' ? 4
+        : role == 'finance' ? 3
+        : role == 'support' ? 2
+        : role == 'content_moderator' ? 1
+        : 0;
+    }
+
+    // PLATFORM COLLECTIONS
+    match /platform_users/{userId} {
+      allow read: if isPlatformUser();
+      allow create, update: if hasMinPlatformRole('platform_admin');
+      allow delete: if hasMinPlatformRole('super_admin');
+    }
+
+    match /platform_audit_log/{entryId} {
+      allow read: if isPlatformUser();
+      allow create: if isPlatformUser();
+    }
+
+    match /platform_notifications/{notifId} {
+      allow read: if isPlatformUser();
+      allow create: if isPlatformUser();
+      allow update: if isPlatformUser();
+    }
+
+    match /platform_settings/global {
+      allow read: if isPlatformUser();
+      allow write: if hasMinPlatformRole('platform_admin');
+    }
+
+    match /feature_flags/{flagId} {
+      allow read: if isAuthenticated();
+      allow write: if hasMinPlatformRole('operations');
+    }
+
+    match /upgrade_requests/{requestId} {
+      allow read: if isPlatformUser() ||
+        (isAuthenticated() && resource.data.requestedBy == request.auth.uid);
       allow create: if isAuthenticated();
-      allow update, delete: if hasRole(workspaceId, 'owner');
+      allow update: if hasMinPlatformRole('partner_manager');
     }
- 
-    // Workspace members
-    match /workspace_members/{memberId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow write: if isWorkspaceMember(resource.data.workspaceId);
+
+    match /agency_claim_requests/{requestId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.initiatedBy == request.auth.uid ||
+         resource.data.approvedBy == request.auth.uid ||
+         isPlatformUser());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
     }
- 
-    // Feature collections — workspace-scoped pattern
-    match /content_drafts/{docId} {
-      allow read: if isWorkspaceMember(resource.data.workspaceId);
-      allow create: if isWorkspaceMember(request.resource.data.workspaceId);
-      allow update, delete: if isWorkspaceMember(resource.data.workspaceId);
+
+    // WORKSPACE COLLECTIONS
+    match /workspaces/{workspaceId} {
+      allow read: if isWorkspaceMember(workspaceId) || isPlatformUser();
+      allow create: if isAuthenticated();
+      allow update: if hasMinRole(workspaceId, 'admin') || hasMinPlatformRole('operations');
+      allow delete: if hasRole(workspaceId, 'owner');
     }
- 
-    match /brand_profiles/{docId} {
-      allow read: if isWorkspaceMember(resource.data.workspaceId);
-      allow create: if isWorkspaceMember(request.resource.data.workspaceId);
-      allow update, delete: if isWorkspaceMember(resource.data.workspaceId);
+
+    match /workspaces/{workspaceId}/members/{memberId} {
+      allow read: if isWorkspaceMember(workspaceId) || isPlatformUser();
+      allow create, delete: if hasMinRole(workspaceId, 'admin');
+      allow update: if hasMinRole(workspaceId, 'admin') &&
+        roleLevel(request.resource.data.role) < roleLevel(getRole(workspaceId));
     }
- 
-    // Public endpoints (no auth required)
-    match /leads/{docId} {
-      allow create: if true;  // Public form submissions
-      allow read, update, delete: if isWorkspaceMember(resource.data.workspaceId);
+
+    match /workspaces/{workspaceId}/activity_log/{entryId} {
+      allow read: if hasMinRole(workspaceId, 'admin') || isPlatformUser();
+      allow create: if isWorkspaceMember(workspaceId);
     }
- 
-    // Add remaining collections following same workspace-scoped pattern:
-    // repurposed_content, publish_jobs, calendar_events, analytics_snapshots,
-    // approvals, social_connections, seo_reports, email_campaigns,
-    // subscriber_lists, crm_forms, generated_images, clients,
-    // client_reports, listening_configs, listening_feeds
+
+    match /workspaces/{workspaceId}/profile_score/{docId} {
+      allow read: if isWorkspaceMember(workspaceId);
+      allow write: if isWorkspaceMember(workspaceId);
+    }
+
+    match /workspaces/{workspaceId}/content_drafts/{draftId} {
+      allow read: if hasMinRole(workspaceId, 'viewer') || isPlatformUser();
+      allow create: if hasMinRole(workspaceId, 'editor');
+      allow update: if hasMinRole(workspaceId, 'editor') &&
+        (resource.data.createdBy == request.auth.uid || hasMinRole(workspaceId, 'admin'));
+      allow delete: if hasMinRole(workspaceId, 'admin');
+    }
+
+    match /workspaces/{workspaceId}/approvals/{approvalId} {
+      allow read: if hasMinRole(workspaceId, 'viewer');
+      allow create: if hasMinRole(workspaceId, 'editor');
+      allow update: if hasMinRole(workspaceId, 'manager') &&
+        resource.data.approverUserId == request.auth.uid;
+    }
+
+    match /workspaces/{workspaceId}/publish_jobs/{jobId} {
+      allow read: if hasMinRole(workspaceId, 'viewer');
+      allow create: if hasMinRole(workspaceId, 'manager');
+    }
+
+    match /workspaces/{workspaceId}/clients/{clientId} {
+      allow read, write: if hasMinRole(workspaceId, 'admin');
+      allow read: if isWorkspaceMember(workspaceId) &&
+        request.auth.uid in resource.data.assignedTeamMembers;
+      allow read: if isAuthenticated() &&
+        request.auth.uid in resource.data.portalUserIds;
+    }
+
+    match /notifications/{userId}/items/{notifId} {
+      allow read, update: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated();
+    }
+
+    // Catch-all for remaining workspace subcollections
+    match /workspaces/{workspaceId}/{subcollection}/{docId} {
+      allow read: if hasMinRole(workspaceId, 'viewer') || isPlatformUser();
+      allow create: if hasMinRole(workspaceId, 'editor');
+      allow update: if hasMinRole(workspaceId, 'editor');
+      allow delete: if hasMinRole(workspaceId, 'admin');
+    }
   }
 }

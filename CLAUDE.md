@@ -94,8 +94,16 @@ Await explicit "commit approved" before running:
 - Clerk auth check on every protected route
  
 ## Build Order — Respect Dependencies
-Phase 1: F7 → F8 (foundation — must complete before anything else)
+Phase 0: F0 (auth, onboarding, RBAC — must complete before ALL other features)
+Phase 1: F7 → F8 (workspace management + brand voice — after F0)
 Phase 1 parallel: F1, F2, F3, F4, F6 (run simultaneously after F7+F8)
 Phase 2 parallel: F9, F5 (after F3 exists)
 Phase 3 parallel: F10, F11, F13 (after Phase 2)
 Phase 4 parallel: F12, F14, F15 (after Phase 3)
+
+## Key Specifications
+- RBAC: docs/rbac-specification.md (v2.0) — authoritative source for all roles & permissions
+- Feature contracts: .claude/feature-contracts/F0-auth-onboarding.md (and future F1-F16)
+- Platform: Aura.ai — admin panel at /admin (path-based, subdomain later)
+- Billing: Stripe — base tier + per-seat pricing
+- Trial: 15-day, full features with usage caps, soft-lock on expiry

@@ -218,7 +218,7 @@ OUTPUT FORMAT (save to `docs/plans/<FN>-plan.md`):
 8. Risk Flags (any ambiguity or known complexity)
 9. Estimated task breakdown (with file paths)
 
-Be specific. Include TypeScript interfaces in schema section.
+Be specific. Use high levelof planning and try to get as much information  as  possible by scanning mulitple times. Include TypeScript interfaces in schema section.
 Do not write implementation code — planning artifacts only.
 ```
 
