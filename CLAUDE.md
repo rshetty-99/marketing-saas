@@ -94,12 +94,30 @@ Await explicit "commit approved" before running:
 - Clerk auth check on every protected route
  
 ## Build Order — Respect Dependencies
-Phase 0: F0 (auth, onboarding, RBAC — must complete before ALL other features)
-Phase 1: F7 → F8 (workspace management + brand voice — after F0)
+Phase 0: F0 ✅ COMPLETE (auth, onboarding, RBAC, dashboard, entity data model)
+Phase 1: F7 + F8 in parallel ← CURRENT (workspace management + brand voice)
 Phase 1 parallel: F1, F2, F3, F4, F6 (run simultaneously after F7+F8)
 Phase 2 parallel: F9, F5 (after F3 exists)
 Phase 3 parallel: F10, F11, F13 (after Phase 2)
 Phase 4 parallel: F12, F14, F15 (after Phase 3)
+
+## Execution Permissions
+- Agent has pre-approval to execute: build, test, seed, cleanup, git operations
+- Use /grill-me before each feature to resolve design decisions upfront
+- Commit after each feature is complete + tests pass
+- Push to origin/develop after commit
+
+## Locked Architecture Decisions (from F0 grill session)
+- `entity_profiles/{workspaceId}` = business identity + marketing defaults (absorbs brand_profiles)
+- `clients/{clientId}` = flat top-level, scoped by agencyWorkspaceId field
+- `workspaces/{id}` = lean tenant shell (system data only)
+- `FirestoreTimestamp` portable type in shared types (no firebase-admin in client bundles)
+- Entity profile created at onboarding Step 1 (always exists, never null)
+- Roles + permissions in Firestore (workspace_roles/, platform_roles/, *_permissions/)
+- RBAC service with 5-min cache reads from Firestore
+- Sidebar nav items gated by Firestore permission keys
+- Platform users → /admin, client_portal → /portal, workspace users → /dashboard
+- Single seed command: `npm run seed` (runs all scripts in order)
 
 ## Key Specifications
 - RBAC: docs/rbac-specification.md (v2.0) — authoritative source for all roles & permissions

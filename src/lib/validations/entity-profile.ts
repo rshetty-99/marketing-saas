@@ -272,3 +272,249 @@ export const updatePlatformUserProfileSchema = z.object({
 });
 
 export type UpdatePlatformUserProfileInput = z.infer<typeof updatePlatformUserProfileSchema>;
+
+// ═══════════════════════════════════════════════════════════
+// F8: BRAND VOICE SCHEMAS
+// ═══════════════════════════════════════════════════════════
+
+export const personalityTraitSchema = z.object({
+  trait: z.string().min(1).max(50),
+  intensity: z.number().int().min(1).max(10),
+});
+
+export const writingSampleSchema = z.object({
+  content: z.string().min(10).max(5000),
+  source: z.string().max(200).optional(),
+  isApproved: z.boolean(),
+});
+
+export const vocabularyTermSchema = z.object({
+  term: z.string().min(1).max(100),
+  replacement: z.string().max(100).optional(),
+  context: z.string().max(500).optional(),
+  reason: z.string().max(500).optional(),
+});
+
+export const channelVoiceOverrideSchema = z.object({
+  channel: z.string().min(1).max(50),
+  formalityLevel: z.number().int().min(1).max(10).optional(),
+  toneDescriptors: z.array(z.string().max(50)).max(10).optional(),
+  emojiPolicy: z.enum(['encouraged', 'allowed', 'discouraged', 'banned']).optional(),
+  maxSentenceLength: z.number().int().min(5).max(100).optional(),
+  notes: z.string().max(1000).optional(),
+});
+
+export const brandVoiceProfileSchema = z.object({
+  personalityTraits: z.array(personalityTraitSchema).max(10).optional(),
+  formalityLevel: z.number().int().min(1).max(10).optional(),
+  toneDescriptors: z.array(z.string().max(50)).max(20).optional(),
+  antiToneDescriptors: z.array(z.string().max(50)).max(20).optional(),
+  voiceDescription: z.string().max(2000).optional(),
+  writingSamples: z.array(writingSampleSchema).max(10).optional(),
+  approvedTerms: z.array(vocabularyTermSchema).max(100).optional(),
+  bannedTerms: z.array(vocabularyTermSchema).max(100).optional(),
+  cautionTerms: z.array(vocabularyTermSchema).max(50).optional(),
+  maxSentenceLength: z.number().int().min(5).max(100).optional(),
+  targetReadingLevel: z.string().max(20).optional(),
+  preferredCTAStyle: z.string().max(100).optional(),
+  emojiPolicy: z.enum(['encouraged', 'allowed', 'discouraged', 'banned']).optional(),
+  formattingPreferences: z.object({
+    bulletPoints: z.boolean().optional(),
+    shortParagraphs: z.boolean().optional(),
+    headingStyle: z.string().max(50).optional(),
+  }).optional(),
+  channelOverrides: z.array(channelVoiceOverrideSchema).max(10).optional(),
+  scoringWeights: z.object({
+    vocabulary: z.number().min(0).max(1).optional(),
+    tone: z.number().min(0).max(1).optional(),
+    structure: z.number().min(0).max(1).optional(),
+    readability: z.number().min(0).max(1).optional(),
+    identity: z.number().min(0).max(1).optional(),
+  }).optional(),
+});
+
+export type BrandVoiceProfileInput = z.infer<typeof brandVoiceProfileSchema>;
+
+// ─── Brand Assets Schemas ──────────────────────────────────────────
+
+const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
+
+export const brandColorSchema = z.object({
+  role: z.string().min(1).max(50),
+  name: z.string().max(50).optional(),
+  hex: z.string().regex(hexColorRegex),
+  rgb: z.string().max(30).optional(),
+});
+
+export const colorPaletteSchema = z.object({
+  name: z.string().min(1).max(50),
+  colors: z.array(brandColorSchema).min(1).max(20),
+});
+
+export const brandTypographySchema = z.object({
+  heading: z.object({
+    family: z.string().max(100),
+    weights: z.array(z.number().int()).max(10).optional(),
+    fallback: z.string().max(100).optional(),
+  }).optional(),
+  body: z.object({
+    family: z.string().max(100),
+    weights: z.array(z.number().int()).max(10).optional(),
+    fallback: z.string().max(100).optional(),
+  }).optional(),
+  accent: z.object({
+    family: z.string().max(100),
+    weights: z.array(z.number().int()).max(10).optional(),
+    fallback: z.string().max(100).optional(),
+  }).optional(),
+  lineHeight: z.object({
+    heading: z.number().optional(),
+    body: z.number().optional(),
+  }).optional(),
+  letterSpacing: z.object({
+    heading: z.string().max(20).optional(),
+    body: z.string().max(20).optional(),
+  }).optional(),
+});
+
+export const logoVariantSchema = z.object({
+  variant: z.enum(['primary', 'icon', 'wordmark', 'horizontal', 'stacked']),
+  colorMode: z.enum(['full_color', 'monochrome', 'dark_bg', 'light_bg']),
+  fileUrl: z.string().max(500),
+  fileType: z.enum(['svg', 'png', 'jpg']).optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  minDisplaySize: z.number().int().positive().optional(),
+});
+
+export const brandAssetsSchema = z.object({
+  colorPalettes: z.array(colorPaletteSchema).max(5).optional(),
+  typography: brandTypographySchema.optional(),
+  logoVariants: z.array(logoVariantSchema).max(20).optional(),
+  brandGuidelinesUrl: z.string().max(500).optional(),
+  faviconUrl: z.string().max(500).optional(),
+});
+
+export type BrandAssetsInput = z.infer<typeof brandAssetsSchema>;
+
+// ─── Brand Profile Update (F8 — writes to entity_profiles) ────────
+
+export const updateBrandProfileSchema = z.object({
+  brandName: z.string().max(200).optional(),
+  primaryColor: z.string().regex(hexColorRegex).optional(),
+  voiceTone: z.string().max(50).optional(),
+  brandVoice: brandVoiceProfileSchema.optional(),
+  brandAssets: brandAssetsSchema.optional(),
+  contentStrategy: contentStrategySchema.optional(),
+  aiDefaults: aiDefaultsSchema.optional(),
+});
+
+export type UpdateBrandProfileInput = z.infer<typeof updateBrandProfileSchema>;
+
+// ═══════════════════════════════════════════════════════════
+// F7: TEAM MANAGEMENT SCHEMAS
+// ═══════════════════════════════════════════════════════════
+
+export const inviteMemberSchema = z.object({
+  email: z.string().email(),
+  role: z.enum(['admin', 'manager', 'editor', 'viewer']),
+  title: z.string().max(100).optional(),
+  department: z.string().max(100).optional(),
+  employmentType: z.enum(['full_time', 'part_time', 'contractor', 'freelancer']).optional(),
+});
+
+export const bulkInviteSchema = z.object({
+  invitations: z.array(inviteMemberSchema).min(1).max(50),
+});
+
+export type BulkInviteInput = z.infer<typeof bulkInviteSchema>;
+
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(['admin', 'manager', 'editor', 'viewer']),
+});
+
+export const deactivateMemberSchema = z.object({
+  reason: z.string().max(500).optional(),
+  reassignTo: z.string().optional(),  // userId to reassign content/clients to
+});
+
+export const transferOwnershipSchema = z.object({
+  newOwnerId: z.string().min(1),
+  confirmWorkspaceName: z.string().min(1),  // Must match workspace name
+});
+
+export const createInviteLinkSchema = z.object({
+  role: z.enum(['admin', 'manager', 'editor', 'viewer']),
+  maxUses: z.number().int().positive().max(100).optional(),
+  expiresInDays: z.number().int().positive().max(30).optional(),
+});
+
+// ─── Admin Member Update (admin editing another member) ───────────
+
+export const adminUpdateMemberSchema = z.object({
+  title: z.string().max(100).optional(),
+  department: z.string().max(100).optional(),
+  employmentType: z.enum(['full_time', 'part_time', 'contractor', 'freelancer']).optional(),
+  availabilityStatus: z.enum(['available', 'busy', 'away', 'on_leave']).optional(),
+  costRate: z.number().int().nonnegative().optional(),
+  billRate: z.number().int().nonnegative().optional(),
+  weeklyCapacityHours: z.number().min(0).max(168).optional(),
+  maxClientAccounts: z.number().int().nonnegative().max(100).optional(),
+  reportsTo: z.string().optional(),
+  skills: z.array(z.string().max(50)).max(20).optional(),
+  assignedClientIds: z.array(z.string()).max(50).optional(),
+});
+
+export type AdminUpdateMemberInput = z.infer<typeof adminUpdateMemberSchema>;
+
+// ─── Workspace Settings Schemas ───────────────────────────────────
+
+export const updateWorkspaceGeneralSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  industry: z.string().max(100).optional(),
+  timezone: z.string().max(50).optional(),
+  locale: z.string().max(10).optional(),
+  primaryEmail: z.string().email().optional(),
+});
+
+export type UpdateWorkspaceGeneralInput = z.infer<typeof updateWorkspaceGeneralSchema>;
+
+const notificationChannelSchema = z.object({
+  inApp: z.boolean(),
+  email: z.boolean(),
+  slack: z.boolean().optional(),
+});
+
+export const updateNotificationSettingsSchema = z.object({
+  content: notificationChannelSchema.optional(),
+  collaboration: notificationChannelSchema.optional(),
+  workspace: notificationChannelSchema.optional(),
+  billing: notificationChannelSchema.optional(),
+  integration: notificationChannelSchema.optional(),
+  analytics: notificationChannelSchema.optional(),
+  digestFrequency: z.enum(['realtime', 'daily', 'weekly']).optional(),
+  digestTime: z.string().max(5).optional(),
+  digestDay: z.number().int().min(1).max(7).optional(),
+  quietHoursEnabled: z.boolean().optional(),
+  quietHoursStart: z.string().max(5).optional(),
+  quietHoursEnd: z.string().max(5).optional(),
+  quietHoursDays: z.array(z.string()).max(7).optional(),
+});
+
+export type UpdateNotificationSettingsInput = z.infer<typeof updateNotificationSettingsSchema>;
+
+export const deleteWorkspaceSchema = z.object({
+  confirmWorkspaceName: z.string().min(1),
+});
+
+export const archiveWorkspaceSchema = z.object({
+  confirmWorkspaceName: z.string().min(1),
+});
+
+// ─── Brand Kit Auto-Extraction ────────────────────────────────────
+
+export const extractBrandFromUrlSchema = z.object({
+  url: z.string().url(),
+});
+
+export type ExtractBrandFromUrlInput = z.infer<typeof extractBrandFromUrlSchema>;

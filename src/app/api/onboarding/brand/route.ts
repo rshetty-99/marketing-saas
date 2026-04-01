@@ -55,20 +55,15 @@ export async function POST(request: NextRequest) {
     const workspaceDoc = workspacesSnap.docs[0];
     const workspaceId = workspaceDoc.id;
 
-    // Create brand profile document
+    // Write brand fields to entity_profiles (absorbed from brand_profiles)
     await adminDb
-      .collection('workspaces')
+      .collection('entity_profiles')
       .doc(workspaceId)
-      .collection('brand_profiles')
-      .doc('default')
-      .set({
+      .update({
         brandName,
         primaryColor,
         voiceTone,
-        workspaceId,
-        createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
-        createdBy: userId,
       });
 
     await updateOnboardingStep(workspaceId, 4);
