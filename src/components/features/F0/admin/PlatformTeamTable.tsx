@@ -1,10 +1,9 @@
 import { adminDb } from '@/lib/firebase/admin';
 import { platformUserConverter } from '@/lib/firebase/converters/workspace';
 import { Badge } from '@/components/ui/badge';
-import type { PlatformUser } from '@/types/features/f0';
-import type { Timestamp } from 'firebase-admin/firestore';
+import type { PlatformUser, FirestoreTimestamp } from '@/types/features/f0';
 
-function formatDate(timestamp: Timestamp | undefined): string {
+function formatDate(timestamp: FirestoreTimestamp | undefined): string {
   if (!timestamp) return 'Never';
   return timestamp.toDate().toLocaleDateString('en-US', {
     year: 'numeric',

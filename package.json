@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:admin": "npx tsx scripts/seed-platform-admin.ts"
+    "seed:admin": "npx tsx scripts/seed-platform-admin.ts",
+    "seed": "npx tsx scripts/seed-all.ts",
+    "seed:clean": "npx tsx scripts/cleanup-all.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.7",

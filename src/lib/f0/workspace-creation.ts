@@ -83,6 +83,18 @@ export async function createWorkspace(input: CreateWorkspaceInput): Promise<stri
       createdBy: input.userId,
     });
 
+    // Entity profile (minimal — enriched later via Settings)
+    const entityProfileRef = adminDb.collection('entity_profiles').doc(org.id);
+    batch.set(entityProfileRef, {
+      workspaceId: org.id,
+      accountType: input.accountType,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      locale: 'en-US',
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+      createdBy: input.userId,
+    });
+
     // Initial profile score
     const scoreRef = workspaceRef.collection('profile_score').doc('current');
     batch.set(scoreRef, {

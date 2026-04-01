@@ -94,6 +94,25 @@ service cloud.firestore {
       allow write: if hasMinPlatformRole('operations');
     }
 
+    // ENTITY PROFILES (flat — one doc per workspace)
+    match /entity_profiles/{workspaceId} {
+      allow read: if isWorkspaceMember(workspaceId) || isPlatformUser();
+      allow create: if isAuthenticated();
+      allow update: if hasMinRole(workspaceId, 'admin') || hasMinPlatformRole('operations');
+      allow delete: if hasRole(workspaceId, 'owner');
+    }
+
+    // CLIENTS (flat — scoped by agencyWorkspaceId field)
+    match /clients/{clientId} {
+      allow read: if isAuthenticated() &&
+        (isWorkspaceMember(resource.data.agencyWorkspaceId) || isPlatformUser());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        hasMinRole(resource.data.agencyWorkspaceId, 'admin');
+      allow delete: if isAuthenticated() &&
+        hasRole(resource.data.agencyWorkspaceId, 'owner');
+    }
+
     match /upgrade_requests/{requestId} {
       allow read: if isPlatformUser() ||
         (isAuthenticated() && resource.data.requestedBy == request.auth.uid);
@@ -155,12 +174,10 @@ service cloud.firestore {
       allow create: if hasMinRole(workspaceId, 'manager');
     }
 
+    // DEPRECATED: clients moved to flat /clients/{clientId} collection
+    // Kept for backward compatibility during migration.
     match /workspaces/{workspaceId}/clients/{clientId} {
-      allow read, write: if hasMinRole(workspaceId, 'admin');
-      allow read: if isWorkspaceMember(workspaceId) &&
-        request.auth.uid in resource.data.assignedTeamMembers;
-      allow read: if isAuthenticated() &&
-        request.auth.uid in resource.data.portalUserIds;
+      allow read: if isWorkspaceMember(workspaceId) || isPlatformUser();
     }
 
     match /notifications/{userId}/items/{notifId} {

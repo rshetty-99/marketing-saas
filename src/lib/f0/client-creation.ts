@@ -48,25 +48,25 @@ export async function createClientWorkspace(
       createdBy,
     });
 
-    // 3. Batch write client doc and child workspace doc
+    // 3. Batch write client doc (flat collection) and child workspace doc
     const batch = adminDb.batch();
 
-    // Client document under the agency workspace
-    const clientRef = adminDb
-      .collection('workspaces')
-      .doc(agencyWorkspaceId)
-      .collection('clients')
-      .doc(childOrg.id);
+    // Client document in flat clients/ collection
+    const clientRef = adminDb.collection('clients').doc(childOrg.id);
 
     batch.set(clientRef, {
       clientId: childOrg.id,
+      agencyWorkspaceId,
       clerkOrgId: childOrg.id,
+      childWorkspaceId: childOrg.id,
       name: data.name,
-      contactEmail: data.contactEmail,
+      primaryContact: {
+        name: '',
+        email: data.contactEmail,
+      },
       industry: data.industry ?? null,
       assignedTeamMemberIds: data.assignedTeamMemberIds ?? [],
       status: 'active',
-      workspaceId: agencyWorkspaceId,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
       createdBy,

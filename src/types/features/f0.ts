@@ -1,4 +1,3 @@
-import { Timestamp } from 'firebase-admin/firestore';
 import type {
   WorkspaceRole,
   PlatformRole,
@@ -6,6 +5,17 @@ import type {
   Tier,
   WorkspaceStatus,
 } from '../roles';
+
+/**
+ * Portable Timestamp type — compatible with firebase-admin's Timestamp
+ * but importable from client components without pulling in firebase-admin.
+ * The actual Timestamp class is used in server code (converters, API routes).
+ */
+export type FirestoreTimestamp = {
+  seconds: number;
+  nanoseconds: number;
+  toDate: () => Date;
+};
 
 // ═══════════════════════════════════════════════════════════
 // SHARED EMBEDDED TYPES
@@ -71,20 +81,20 @@ export interface Workspace {
   tier: Tier;
   status: WorkspaceStatus;
   industry?: string;
-  trialEndsAt?: Timestamp;
+  trialEndsAt?: FirestoreTimestamp;
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
   parentWorkspaceId?: string;
   agencyWorkspaceId?: string;
   onboardingCompleted: boolean;
   onboardingStep: number;
-  onboardingCompletedAt?: Timestamp;
+  onboardingCompletedAt?: FirestoreTimestamp;
   timezone?: string;      // IANA (auto-detected during onboarding)
   locale?: string;        // BCP 47
   primaryEmail?: string;  // Main workspace contact
-  deletedAt?: Timestamp;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  deletedAt?: FirestoreTimestamp;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
   createdBy: string;
 }
 
@@ -186,8 +196,8 @@ interface EntityProfileBase {
   workflow?: WorkflowDefaults;
 
   // Timestamps
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
   createdBy: string;
 }
 
@@ -248,11 +258,11 @@ export interface WorkspaceMember {
   displayName: string;
   avatarUrl?: string;
   invitedBy: string;
-  joinedAt?: Timestamp;
+  joinedAt?: FirestoreTimestamp;
   assignedClientIds?: string[];
-  deletedAt?: Timestamp;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  deletedAt?: FirestoreTimestamp;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
   createdBy: string;
   // Extended fields
   title?: string;
@@ -264,7 +274,7 @@ export interface WorkspaceMember {
   timezone?: string;
   isContractor?: boolean;
   weeklyCapacityHours?: number;
-  lastActiveAt?: Timestamp;
+  lastActiveAt?: FirestoreTimestamp;
   preferences?: MemberPreferences;
 }
 
@@ -279,9 +289,9 @@ export interface PlatformUser {
   role: PlatformRole;
   status: 'active' | 'invited' | 'deactivated';
   invitedBy: string;
-  lastLoginAt?: Timestamp;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  lastLoginAt?: FirestoreTimestamp;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
   createdBy: string;
   // Extended fields
   title?: string;
@@ -349,8 +359,8 @@ export interface AgencyClient {
   lifecycleStage?: LifecycleStage;
   healthScore?: number;
   healthStatus?: HealthStatus;
-  clientSince?: Timestamp;
-  nextReviewDate?: Timestamp;
+  clientSince?: FirestoreTimestamp;
+  nextReviewDate?: FirestoreTimestamp;
   riskLevel?: RiskLevel;
   riskNotes?: string;
 
@@ -360,8 +370,8 @@ export interface AgencyClient {
   retainerCurrency?: string;
   billingCycle?: BillingCycle;
   paymentTerms?: PaymentTerms;
-  contractStartDate?: Timestamp;
-  contractEndDate?: Timestamp;
+  contractStartDate?: FirestoreTimestamp;
+  contractEndDate?: FirestoreTimestamp;
   totalContractValue?: number;
   autoRenew?: boolean;
 
@@ -386,9 +396,9 @@ export interface AgencyClient {
   tags?: string[];
   source?: ClientSource;
   internalNotes?: string;
-  deletedAt?: Timestamp;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  deletedAt?: FirestoreTimestamp;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
   createdBy: string;
 }
 
@@ -404,9 +414,9 @@ export interface ProfileScore {
   maxScore: number;
   percentage: number;
   widgetDismissed: boolean;
-  calculatedAt: Timestamp;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  calculatedAt: FirestoreTimestamp;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
   createdBy: string;
 }
 
@@ -426,9 +436,9 @@ export interface UpgradeRequest {
   status: 'pending' | 'approved' | 'denied';
   reviewedBy?: string;
   reviewNote?: string;
-  reviewedAt?: Timestamp;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  reviewedAt?: FirestoreTimestamp;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
   createdBy: string;
 }
 
@@ -445,8 +455,8 @@ export interface Notification {
   actionUrl?: string;
   workspaceId?: string;
   isRead: boolean;
-  readAt?: Timestamp;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  readAt?: FirestoreTimestamp;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
   createdBy: string;
 }
