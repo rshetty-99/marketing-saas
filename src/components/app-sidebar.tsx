@@ -44,6 +44,7 @@ import {
   CreditCard,
   Building2,
   ClipboardCheck,
+  FileText,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -83,6 +84,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Marketing',
     items: [
       { title: 'Analytics', url: '/dashboard/analytics', icon: BarChart3, permission: 'analytics.view_dashboard' },
+      { title: 'Reports', url: '/dashboard/reports', icon: FileText, permission: 'analytics.view_dashboard' },
       { title: 'SEO', url: '/dashboard/seo', icon: Search, permission: 'seo.view_reports' },
       { title: 'Email', url: '/dashboard/email', icon: Mail, permission: 'email.view_analytics' },
       { title: 'Leads', url: '/dashboard/leads', icon: Users, permission: 'leads.create' },
