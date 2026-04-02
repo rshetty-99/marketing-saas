@@ -109,8 +109,18 @@ Each item needs real credentials, API integrations, or infrastructure to go live
 ## Infrastructure
 - [ ] Firebase Secret Manager — not configured
   - **To go PROD:** Enable Secret Manager API, create secrets for OAuth credentials + encryption keys
-- [ ] Cloud Functions — not deployed
-  - **To go PROD:** Deploy functions for: token refresh, metrics polling, approval escalation, calendar notifications
+- [DEV] Cloud Functions — deployed as HTTP-callable (no auto-schedule)
+  - **8 functions deployed** to us-central1 (Node.js 20, 2nd gen)
+  - **1 Firestore trigger active:** `publishScheduled` (fires on publish_jobs doc creation)
+  - **7 HTTP-callable** (manually triggered via URL until go-live):
+    - `trialEnforcement` → enable schedule: `0 2 * * *` (daily 2am UTC)
+    - `tokenRefresh` → enable schedule: `0 * * * *` (hourly)
+    - `metricsPoller` → enable schedule: `0 */6 * * *` (every 6 hours)
+    - `approvalEscalation` → enable schedule: `30 * * * *` (hourly at :30)
+    - `calendarNotifications` → enable schedule: `*/15 * * * *` (every 15 min)
+    - `rankingTracker` → enable schedule: `0 3 * * 1` (weekly Monday)
+    - `contentDecayMonitor` → enable schedule: `0 3 * * 3` (weekly Wednesday)
+  - **To go PROD:** Change `onRequest` to `onSchedule` in `functions/src/index.ts`, rebuild + redeploy
 - [ ] Cloud Tasks — not configured
   - **To go PROD:** Enable Cloud Tasks API, configure queues for scheduled publishing, notification delivery
 - [ ] BigQuery — not configured
