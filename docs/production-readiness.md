@@ -123,6 +123,58 @@ Each item needs real credentials, API integrations, or infrastructure to go live
 
 ---
 
+## F10: SEO & Keywords
+- [DEV] On-page SEO scorer — real logic (keyword density, meta tags, headings, readability)
+- [DEV] Keyword research — mock data (search volume, difficulty, rankings)
+  - **To go PROD:** Set `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` or `SEMRUSH_API_KEY`
+  - **Blocked on:** DataForSEO or SEMrush API credentials
+- [DEV] Content briefs — mock generated briefs
+  - **To go PROD:** Real Claude API for brief generation + keyword data from DataForSEO
+- [DEV] Ranking tracker — mock ranking snapshots
+  - **To go PROD:** Cloud Function polling DataForSEO rank tracker API weekly
+- [DEV] Technical SEO (Core Web Vitals, page speed) — schema defined, no implementation
+  - **To go PROD:** Google PageSpeed Insights API integration
+- [DEV] Cannibalization detection — schema defined, no scanner
+  - **To go PROD:** Cross-reference content_drafts focusKeywords in batch job
+- [DEV] Content decay tracking — schema defined, no monitoring
+  - **To go PROD:** Cloud Function comparing weekly ranking snapshots
+
+## F11: Email Campaigns
+- [DEV] Campaign creation — template-based + custom HTML, all fields stored
+- [DEV] Email sending — mock (no actual emails sent)
+  - **To go PROD:** Set `SENDGRID_API_KEY` or `RESEND_API_KEY`
+  - **Blocked on:** SendGrid/Resend credentials + domain verification
+- [DEV] Subscriber management — Firestore lists, import, tags, consent tracking
+- [DEV] Campaign analytics — mock metrics
+  - **To go PROD:** SendGrid/Resend webhook callbacks for opens, clicks, bounces
+- [DEV] Domain health — schema defined, no checker
+  - **To go PROD:** DNS lookup for SPF/DKIM/DMARC verification
+- [DEV] Deliverability scoring — schema defined, no scoring
+  - **To go PROD:** SpamAssassin or mail-tester API integration
+- [DEV] A/B testing — schema defined, no split logic
+  - **To go PROD:** Variant selection + winner determination Cloud Function
+- [DEV] Drip automation/sequences — schema defined, no automation engine
+  - **To go PROD:** Cloud Functions with trigger-based step execution
+- [DEV] Send throttling — schema defined, Cloud Tasks not configured
+  - **To go PROD:** Cloud Tasks queue for batch sending with rate control
+
+## F13: Image Generation
+- [DEV] Image generation — mock (placeholder gradient with prompt text)
+  - **To go PROD:** Set `VERTEX_AI_PROJECT_ID`, `VERTEX_AI_LOCATION`, `VERTEX_AI_NB2_MODEL_ID`
+  - **Blocked on:** Google Cloud Vertex AI credentials + billing
+- [DEV] Image library — works for viewing/organizing mock images
+- [DEV] Batch generation — schema defined, mock returns multiple placeholders
+- [DEV] Image-to-image — schema defined, no implementation
+  - **To go PROD:** Vertex AI image-to-image API
+- [DEV] Image editing (inpaint/outpaint/upscale/bg removal) — schema defined, no implementation
+  - **To go PROD:** Vertex AI or Stability AI editing endpoints
+- [DEV] Template overlays (text/logo on images) — schema defined, no renderer
+  - **To go PROD:** Sharp or Canvas-based server-side image composition
+- [DEV] Platform auto-sizing — schema defined, no auto-crop
+  - **To go PROD:** Sharp-based auto-crop with face detection
+- [DEV] Image optimization (WebP/AVIF) — schema defined, no converter
+  - **To go PROD:** Sharp-based format conversion on upload
+
 ## Deferred Features (Future Phases)
 
 ### Phase 3+
