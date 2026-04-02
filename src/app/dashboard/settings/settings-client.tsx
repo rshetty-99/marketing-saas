@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertTriangle, Settings, Building2, Bell, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { AlertTriangle, Settings, Building2, Bell, Trash2, ClipboardCheck } from 'lucide-react';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -34,7 +38,7 @@ interface SettingsPageClientProps {
   workspaceName: string;
 }
 
-type Tab = 'general' | 'profile' | 'notifications' | 'danger';
+type Tab = 'general' | 'profile' | 'approvals' | 'notifications' | 'danger';
 
 export function SettingsPageClient({
   workspace,
@@ -87,6 +91,7 @@ export function SettingsPageClient({
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: 'general', label: 'General', icon: Settings },
     { key: 'profile', label: 'Profile', icon: Building2 },
+    { key: 'approvals', label: 'Approvals', icon: ClipboardCheck },
     { key: 'notifications', label: 'Notifications', icon: Bell },
     ...(isOwner ? [{ key: 'danger' as Tab, label: 'Danger Zone', icon: Trash2 }] : []),
   ];
@@ -206,6 +211,78 @@ export function SettingsPageClient({
             {!readOnly && (
               <Button onClick={saveProfile} disabled={isSaving} className="w-fit">
                 {isSaving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Approvals Tab */}
+      {activeTab === 'approvals' && (
+        <Card data-testid="approval-settings">
+          <CardHeader>
+            <CardTitle className="font-display">Approval Workflow</CardTitle>
+            <CardDescription>Configure how content is reviewed before publishing.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-6">
+            <div className="flex items-center justify-between rounded-lg border border-border p-4">
+              <div>
+                <p className="font-ui text-sm font-medium">Require Approval</p>
+                <p className="text-[11px] text-muted-foreground">Content must be approved before publishing</p>
+              </div>
+              <Select defaultValue="true" disabled={readOnly}>
+                <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="true">Yes</SelectItem>
+                  <SelectItem value="false">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border p-4">
+              <div>
+                <p className="font-ui text-sm font-medium">Self-Approval</p>
+                <p className="text-[11px] text-muted-foreground">Allow managers to approve their own content</p>
+              </div>
+              <Select defaultValue="false" disabled={readOnly}>
+                <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="true">Yes</SelectItem>
+                  <SelectItem value="false">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border p-4">
+              <div>
+                <p className="font-ui text-sm font-medium">Escalation Threshold</p>
+                <p className="text-[11px] text-muted-foreground">Hours before pending approvals escalate to admins</p>
+              </div>
+              <Select defaultValue="48" disabled={readOnly}>
+                <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="24">24h</SelectItem>
+                  <SelectItem value="48">48h</SelectItem>
+                  <SelectItem value="72">72h</SelectItem>
+                  <SelectItem value="168">1 week</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border p-4">
+              <div>
+                <p className="font-ui text-sm font-medium">Auto-Approve Roles</p>
+                <p className="text-[11px] text-muted-foreground">These roles bypass the approval workflow</p>
+              </div>
+              <div className="flex gap-1">
+                <Badge variant="outline" className="text-[10px]">Owner</Badge>
+                <Badge variant="outline" className="text-[10px]">Admin</Badge>
+              </div>
+            </div>
+
+            {!readOnly && (
+              <Button disabled={isSaving} className="w-fit">
+                {isSaving ? 'Saving...' : 'Save Approval Settings'}
               </Button>
             )}
           </CardContent>
