@@ -66,6 +66,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Overview',
     items: [
       { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+      { title: 'Inbox', url: '/dashboard/inbox', icon: Mail },
     ],
   },
   {
