@@ -94,12 +94,12 @@ Await explicit "commit approved" before running:
 - Clerk auth check on every protected route
  
 ## Build Order — Respect Dependencies
-Phase 0: F0 ✅ COMPLETE (auth, onboarding, RBAC, dashboard, entity data model)
-Phase 1: F7 + F8 ✅ COMPLETE (workspace management + brand voice)
-Phase 1 parallel: F1, F2, F3, F4, F6 ← CURRENT (content features, run simultaneously)
-Phase 2 parallel: F9, F5 (after F3 exists)
-Phase 3 parallel: F10, F11, F13 (after Phase 2)
-Phase 4 parallel: F12, F14, F15 (after Phase 3)
+Phase 0: F0           ✅ COMPLETE (auth, onboarding, RBAC, dashboard, entity data model)
+Phase 1: F7 + F8      ✅ COMPLETE (workspace management + brand voice)
+Phase 1: F1-F4, F6    ✅ COMPLETE (content pipeline)
+Phase 2: F9 + F5      ✅ COMPLETE (social connections + analytics)
+Phase 3: F10, F11, F13 ✅ COMPLETE (SEO, email campaigns, image generation)
+Phase 4: F12, F14, F15 ← NEXT (lead management, client management, billing)
 
 ## Execution Permissions
 - Agent has pre-approval to execute: build, test, seed, cleanup, git operations
@@ -107,7 +107,51 @@ Phase 4 parallel: F12, F14, F15 (after Phase 3)
 - Commit after each feature is complete + tests pass
 - Push to origin/develop after commit
 
-## Locked Architecture Decisions (from F0 grill session)
+## Feature Planning Protocol — MANDATORY
+When planning any new feature or phase, follow this sequence:
+
+### 1. Explore existing codebase
+- Read relevant RBAC spec sections, existing types, sidebar nav, Firestore rules
+- Identify what EXISTS vs what NEEDS TO BE BUILT
+
+### 2. Grill session (/grill-me)
+- Resolve all design decisions one at a time
+- Lock decisions before implementation
+
+### 3. Research gaps — MINIMUM 2 PASSES
+After the grill session and BEFORE implementation, run at least 2 rounds
+of competitive research to find missing fields and features:
+  - **Pass 1**: Research 5-10 competitor platforms for the feature area.
+    Identify missing fields, data types, and patterns.
+  - **Pass 2**: Take the combined fields from the grill + Pass 1 and
+    do a SECOND gap check specifically looking for what's STILL missing.
+    Check for: accessibility, compliance, analytics, automation,
+    integration points, and edge cases.
+  - Present findings to user with "Add Now" vs "Defer" recommendation.
+  - Only proceed to implementation after user confirms the field list.
+
+### 4. Update production-readiness.md
+- Track all mock/dev implementations that need real credentials for production
+- Include: env vars needed, API scopes, redirect URIs, blockers
+
+### 5. Implement
+- Types first (foundation)
+- Zod schemas (validation)
+- Services (business logic)
+- API routes
+- UI pages
+- E2E tests
+- Build + run all tests + commit + push
+
+## Dev vs Production Pattern
+- Build real architecture, use mock data for dev
+- All mock implementations tracked in docs/production-readiness.md
+- Code is production-ready — swap mock for real when credentials are set
+- Pattern applies to: AI generation (F1), publishing (F3), analytics (F5),
+  social OAuth (F9), SEO APIs (F10), email sending (F11), image generation (F13)
+
+## Locked Architecture Decisions
+### From F0 grill session:
 - `entity_profiles/{workspaceId}` = business identity + marketing defaults (absorbs brand_profiles)
 - `clients/{clientId}` = flat top-level, scoped by agencyWorkspaceId field
 - `workspaces/{id}` = lean tenant shell (system data only)
@@ -119,8 +163,47 @@ Phase 4 parallel: F12, F14, F15 (after Phase 3)
 - Platform users → /admin, client_portal → /portal, workspace users → /dashboard
 - Single seed command: `npm run seed` (runs all scripts in order)
 
+### From F7+F8 grill session:
+- Flat routing under /dashboard/ (no nested workspace/ prefix)
+- Tabbed pages for settings, brand, client settings
+- Inline dropdown with confirmation for role changes
+- Team page admin-only (managers/editors/viewers don't see it)
+- Single component with readOnly prop for view vs edit
+- Brand data lives in entity_profiles only (brand_profiles deprecated)
+- URL-only for file uploads (real uploads with F16/DAM)
+
+### From F1-F6 grill session:
+- Mock AI for content generation (real Claude when API key set)
+- Mock + manual publish modes (real API calls with F9)
+- Configurable multi-stage approval (freelancer=auto, org=2-stage, agency=3-stage)
+- Markdown editor with live preview for content
+- 12 content types, 10 channels — full taxonomy from day one
+- 8-state content lifecycle: draft→submitted→approved→scheduled→published→retracted→archived (+rejected)
+- F2 repurposing creates new drafts (no separate collection)
+- Calendar auto-populated from publish jobs + approval deadlines + content due dates
+- Single content_drafts collection (type-specific optional fields)
+- Agency content in agency workspace, clientId field for scoping
+
+### From F9+F5 grill session:
+- AES-256-GCM token encryption with workspace key (cached in-memory)
+- All 8 social platforms: LinkedIn, Twitter, Instagram, Facebook, TikTok, YouTube, Pinterest, Google Business
+- Integrations hub with categories (Social active, others "Coming Soon")
+- Client switcher filters analytics + dedicated /analytics/clients/[clientId] route
+- Social connections as subcollection (workspaces/{id}/social_connections/)
+- Daily analytics snapshots, Firestore only (BigQuery deferred)
+- Recharts via shadcn/ui chart components
+
+### From F10+F11+F13 grill session:
+- Real on-page SEO scorer + mock keyword research (DataForSEO/SEMrush for prod)
+- Debounced client-side SEO scoring + on-demand server-side analysis
+- Template-based email editor (8 pre-built + custom HTML)
+- Hybrid subscriber management (Firestore lists, SendGrid/Resend for sending)
+- Mock image generation (Vertex AI for prod)
+- All dimension presets + 8 style presets, brand colors auto-injected
+
 ## Key Specifications
 - RBAC: docs/rbac-specification.md (v2.0) — authoritative source for all roles & permissions
+- Production readiness: docs/production-readiness.md — tracks all mock→prod swap items
 - Feature contracts: .claude/feature-contracts/F0-auth-onboarding.md (and future F1-F16)
 - Platform: Aura.ai — admin panel at /admin (path-based, subdomain later)
 - Billing: Stripe — base tier + per-seat pricing
