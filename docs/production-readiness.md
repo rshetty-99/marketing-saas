@@ -175,6 +175,65 @@ Each item needs real credentials, API integrations, or infrastructure to go live
 - [DEV] Image optimization (WebP/AVIF) — schema defined, no converter
   - **To go PROD:** Sharp-based format conversion on upload
 
+## F12: Lead Management / CRM
+- [DEV] Lead pipeline — full UI with customizable stages, mock data
+- [DEV] Lead scoring — manual + rule-based scoring model
+  - **To go PROD:** Integrate with website tracking (page visits, form submissions) for auto-scoring
+- [DEV] Lead nurture automation — schema defined, no automation engine
+  - **To go PROD:** Cloud Functions with trigger-based step execution + F11 email integration
+- [DEV] Multi-touch attribution — schema defined, no tracking pixel
+  - **To go PROD:** UTM tracking integration + website analytics correlation
+- [DEV] Real-time duplicate detection — manual flagging only
+  - **To go PROD:** Fuzzy matching service (Levenshtein on email+company+phone)
+- [DEV] Lead recycling — schema defined, no automation
+  - **To go PROD:** Scheduled Cloud Function for stale lead re-engagement
+- [DEV] CSV import — schema defined, basic parsing
+  - **To go PROD:** Background job for large imports (Cloud Tasks)
+
+## F14: Client Management
+- [DEV] Client portal — reports + dashboard + content feedback UI
+- [DEV] White-label reports — mock PDF generation with brand config
+  - **To go PROD:** PDFKit/React PDF real rendering + SendGrid delivery
+  - **Blocked on:** PDF generation library + email service credentials
+- [DEV] Client onboarding checklist — template system with default steps
+- [DEV] SOW/deliverables tracking — schema defined, basic UI
+  - **To go PROD:** Automated delivery verification + approval flow
+- [DEV] Client-specific approval chains — schema defined
+  - **To go PROD:** Per-client workflow template assignment
+- [DEV] Health score — full 5-category weighted model with mock signals
+  - **To go PROD:** Real engagement/activity data from F3/F5/F6
+- [DEV] Client offboarding — checklist + data export stub
+  - **To go PROD:** Automated data export to ZIP + Clerk org cleanup
+
+## F15: Billing / Stripe
+- [DEV] Subscription management — mock when no Stripe keys, test mode when present
+  - **To go PROD:** Set `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`
+  - **Blocked on:** Stripe account + product/price creation
+- [DEV] Usage tracking — real counting from Firestore collections
+- [DEV] Trial enforcement — fully working (soft lock at 15 days)
+- [DEV] Invoice history — mock invoices
+  - **To go PROD:** Stripe Invoice API + PDF download
+- [DEV] Dunning management — schema defined, no retry logic
+  - **To go PROD:** Stripe Smart Retries + webhook handling for payment_failed events
+- [DEV] Coupons/promotions — schema defined
+  - **To go PROD:** Stripe Coupon API integration
+- [DEV] Tax compliance — schema defined
+  - **To go PROD:** Stripe Tax API for automatic VAT/GST calculation
+- [DEV] Credit system — schema defined
+  - **To go PROD:** Stripe Customer Balance API or custom ledger
+- [DEV] Revenue metrics (MRR/ARR/churn) — schema defined
+  - **To go PROD:** Cloud Function computing daily revenue snapshots from Stripe data
+- [DEV] Billing portal — self-service stub
+  - **To go PROD:** Stripe Customer Portal session creation
+
+## Social Listening (Deferred — tracked separately from F12)
+- [ ] Brand mention monitoring — Brandwatch/Brand24 API integration
+  - **Env vars:** `BRANDWATCH_API_KEY` or `BRAND24_API_KEY`
+  - **Blocked on:** Enterprise API credentials ($$$)
+- [ ] Competitor tracking — mention volume comparison
+- [ ] Sentiment analysis — Claude API for comment/mention classification
+- [ ] Alert digests — email notifications for spike/drop in mentions
+
 ## Deferred Features (Future Phases)
 
 ### Phase 3+
