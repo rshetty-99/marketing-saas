@@ -95,8 +95,8 @@ Await explicit "commit approved" before running:
  
 ## Build Order — Respect Dependencies
 Phase 0: F0 ✅ COMPLETE (auth, onboarding, RBAC, dashboard, entity data model)
-Phase 1: F7 + F8 in parallel ← CURRENT (workspace management + brand voice)
-Phase 1 parallel: F1, F2, F3, F4, F6 (run simultaneously after F7+F8)
+Phase 1: F7 + F8 ✅ COMPLETE (workspace management + brand voice)
+Phase 1 parallel: F1, F2, F3, F4, F6 ← CURRENT (content features, run simultaneously)
 Phase 2 parallel: F9, F5 (after F3 exists)
 Phase 3 parallel: F10, F11, F13 (after Phase 2)
 Phase 4 parallel: F12, F14, F15 (after Phase 3)
