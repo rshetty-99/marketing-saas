@@ -163,8 +163,8 @@ Each item needs real credentials, API integrations, or infrastructure to go live
   - **To go PROD:** SpamAssassin or mail-tester API integration
 - [DEV] A/B testing — schema defined, no split logic
   - **To go PROD:** Variant selection + winner determination Cloud Function
-- [DEV] Drip automation/sequences — schema defined, no automation engine
-  - **To go PROD:** Cloud Functions with trigger-based step execution
+- [DEV] Drip automation/sequences — shared automation engine built (src/lib/automation/)
+  - **To go PROD:** Cloud Functions for delayed step execution + Cloud Tasks for scheduling
 - [DEV] Send throttling — schema defined, Cloud Tasks not configured
   - **To go PROD:** Cloud Tasks queue for batch sending with rate control
 
@@ -176,8 +176,12 @@ Each item needs real credentials, API integrations, or infrastructure to go live
 - [DEV] Batch generation — schema defined, mock returns multiple placeholders
 - [DEV] Image-to-image — schema defined, no implementation
   - **To go PROD:** Vertex AI image-to-image API
-- [DEV] Image editing (inpaint/outpaint/upscale/bg removal) — schema defined, no implementation
-  - **To go PROD:** Vertex AI or Stability AI editing endpoints
+- [DEV] Image editing (inpaint/outpaint/style transfer/variations) — schema defined, no implementation
+  - **To go PROD:** Vertex AI Imagen for AI operations (~$0.020/image)
+- [DEV] Background removal — schema defined, no implementation
+  - **To go PROD:** rembg (open-source, free, runs on Cloud Function CPU)
+- [DEV] Upscaling — schema defined, no implementation
+  - **To go PROD:** Real-ESRGAN (open-source, free, CPU ok for 2x)
 - [DEV] Template overlays (text/logo on images) — schema defined, no renderer
   - **To go PROD:** Sharp or Canvas-based server-side image composition
 - [DEV] Platform auto-sizing — schema defined, no auto-crop
@@ -189,8 +193,8 @@ Each item needs real credentials, API integrations, or infrastructure to go live
 - [DEV] Lead pipeline — full UI with customizable stages, mock data
 - [DEV] Lead scoring — manual + rule-based scoring model
   - **To go PROD:** Integrate with website tracking (page visits, form submissions) for auto-scoring
-- [DEV] Lead nurture automation — schema defined, no automation engine
-  - **To go PROD:** Cloud Functions with trigger-based step execution + F11 email integration
+- [DEV] Lead nurture automation — shared automation engine built (src/lib/automation/)
+  - **To go PROD:** Cloud Functions for trigger evaluation + F11 email integration
 - [DEV] Multi-touch attribution — schema defined, no tracking pixel
   - **To go PROD:** UTM tracking integration + website analytics correlation
 - [DEV] Real-time duplicate detection — manual flagging only
@@ -236,29 +240,84 @@ Each item needs real credentials, API integrations, or infrastructure to go live
 - [DEV] Billing portal — self-service stub
   - **To go PROD:** Stripe Customer Portal session creation
 
-## Social Listening (Deferred — tracked separately from F12)
-- [ ] Brand mention monitoring — Brandwatch/Brand24 API integration
-  - **Env vars:** `BRANDWATCH_API_KEY` or `BRAND24_API_KEY`
-  - **Blocked on:** Enterprise API credentials ($$$)
-- [ ] Competitor tracking — mention volume comparison
-- [ ] Sentiment analysis — Claude API for comment/mention classification
-- [ ] Alert digests — email notifications for spike/drop in mentions
+## Phase 7: Previously Deferred — NOW BUILT
 
-## Deferred Features (Future Phases)
+### Unified Inbox (src/lib/inbox/)
+- [DEV] Inbox page with mock messages from 4 platforms
+- [DEV] Assignment, reply, archive, snooze functionality
+  - **To go PROD:** Wire to real webhook events from Meta/YouTube (free APIs)
+  - **Blocked on:** Webhook registration on Meta Developer Dashboard + YouTube PubSub
 
-### Phase 3+
-- [ ] **Unified Inbox** — Comments, DMs, mentions across platforms. New collections: `inbox_items`, `inbox_replies`. Needs webhook ingestion from Meta, Twitter, YouTube.
-- [ ] **Comment Sentiment Analysis** — NLP pipeline scoring comments as positive/neutral/negative. Per-post sentiment aggregates.
-- [ ] **Share of Voice / Competitor Tracking** — Brandwatch-style monitoring. Track competitor mentions, SOV percentage.
-- [ ] **Webhook Ingestion** — Real-time events from platform webhooks (Meta Webhooks API, YouTube PubSub). Per-platform webhook registration.
+### Webhook Ingestion (src/app/api/webhooks/social/)
+- [DEV] Generic endpoint per platform with deduplication (SHA-256)
+- [DEV] Meta webhook verification (GET challenge-response)
+  - **To go PROD:** Register webhook URLs on Meta, YouTube developer dashboards
+  - **Env vars:** `META_WEBHOOK_VERIFY_TOKEN`
 
-### Phase 4+
-- [ ] **Content ROI Calculation** — Creation time tracking + ad spend data → cost per engagement, earned media value.
-- [ ] **Per-Connection Billing Slots** — Charge per connected social profile. Ties to F15 Stripe billing.
-- [ ] **Advanced Attribution Models** — First-touch, last-touch, linear attribution across cross-posted content.
-- [ ] **Audience Demographics** — Age, location, industry breakdowns from premium platform API tiers.
+### Automation Engine (src/lib/automation/)
+- [DEV] Workflow CRUD with triggers, steps, exit conditions, A/B splits
+- [DEV] Enrollment management + execution logging
+  - **To go PROD:** Cloud Functions for delayed step execution + Cloud Tasks for scheduling
+  - **Blocked on:** Cloud Tasks queue configuration
+
+### Sentiment Analysis (src/lib/sentiment/)
+- [DEV] Rule-based scorer (VADER-like) — works for free, no API needed
+  - **To go PROD:** Optional Claude Haiku upgrade (~$4/mo for 50K analyses)
+  - **Env vars:** `ANTHROPIC_API_KEY` (already tracked in F1)
+
+### Content ROI Calculator (src/lib/roi/)
+- [PROD] Pure internal calculation — no external API needed
+  - Inputs: impressions, engagement, clicks, creation time, ad spend
+  - Outputs: earned media value, ROI percentage
+
+### UTM Attribution (src/lib/attribution/)
+- [PROD] 4 models: first_touch, last_touch, linear, time_decay
+  - Works immediately with existing F3 published UTM links
+  - No agency setup required
+
+### Social Listening / DIY (src/lib/listening/)
+- [DEV] Keyword monitoring config + mock mention feed
+  - **To go PROD (DIY):** Poll Meta Graph API + YouTube Data API search endpoints (free)
+  - **To go PROD (Premium):** Optional Brand24 API upgrade ($239/mo)
+  - **Env vars:** `BRAND24_API_KEY` (optional)
+
+### Per-Connection Billing
+- [DEV] Schema defined on billing types
+  - **To go PROD:** Stripe metered billing API for per-profile charges
+
+### Audience Demographics
+- [DEV] Schema defined on analytics types
+  - **To go PROD:** Pull from Instagram Insights API + YouTube Analytics API + LinkedIn Analytics API (all free)
+
+## Remaining Future Items
+
+- [ ] **Share of Voice** — Requires Brandwatch ($1,000+/mo) or DIY approximation
+- [ ] **Image Editing UI** — Canvas-based inpainting/outpainting (Vertex AI API ready, needs UI)
+- [ ] **PDF Report Rendering** — React-PDF library chosen, needs template components built
+- [ ] **Website Tracking Pixel** — Phase 8 enhancement for full-funnel attribution
+- [ ] **GA4 Integration** — Import conversion path data from Google Analytics
+- [ ] **Drip Sequence Visual Builder** — Drag-and-drop workflow editor UI
+- [ ] **Real-time Duplicate Detection** — Fuzzy matching on lead import
 
 ---
 
-*Last updated: 2026-04-02*
+*Last updated: 2026-04-02 (Phase 7 complete)*
 *Updated by: Claude Opus 4.6*
+
+## Summary: What's Needed to Go Live
+
+### Critical Path (must-have for launch)
+1. `ANTHROPIC_API_KEY` — real AI content generation
+2. `STRIPE_SECRET_KEY` + `STRIPE_PUBLISHABLE_KEY` — real billing
+3. `SENDGRID_API_KEY` or `RESEND_API_KEY` — real email sending
+4. At least 2 social platform OAuth apps (LinkedIn + Instagram recommended)
+5. Enable Cloud Function schedules (flip onRequest → onSchedule)
+6. Custom domain + update OAuth redirect URIs
+
+### Nice-to-have for launch
+7. `DATAFORSEO_LOGIN` — real SEO keyword data
+8. `VERTEX_AI_PROJECT_ID` — real image generation
+9. Firebase Secret Manager for token encryption
+10. BigQuery for long-term analytics
+
+### Total env vars needed: ~15 keys across 6 services
