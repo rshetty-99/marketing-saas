@@ -10,6 +10,11 @@ import {
   UserCog,
   CreditCard,
   ScrollText,
+  ToggleRight,
+  Shield,
+  Handshake,
+  Settings,
+  ArrowUpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
@@ -28,9 +33,14 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/workspaces', label: 'Workspaces', icon: Building2 },
-  { href: '/admin/team', label: 'Team', icon: UserCog },
   { href: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
+  { href: '/admin/upgrades', label: 'Upgrades', icon: ArrowUpCircle },
+  { href: '/admin/feature-flags', label: 'Feature Flags', icon: ToggleRight },
+  { href: '/admin/moderation', label: 'Moderation', icon: Shield },
+  { href: '/admin/partnerships', label: 'Partnerships', icon: Handshake },
+  { href: '/admin/team', label: 'Platform Team', icon: UserCog },
   { href: '/admin/audit-log', label: 'Audit Log', icon: ScrollText },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
