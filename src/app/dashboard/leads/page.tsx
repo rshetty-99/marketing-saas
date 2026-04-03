@@ -61,7 +61,7 @@ export default async function LeadsPage() {
                     <Card key={lead.id as string} className="cursor-pointer hover:border-brand-orange/50 transition-colors">
                       <CardContent className="py-3">
                         <p className="font-ui text-sm font-medium truncate">{lead.firstName as string} {lead.lastName as string}</p>
-                        {lead.companyName && <p className="text-[11px] text-muted-foreground">{lead.companyName as string}</p>}
+                        {lead.companyName ? <p className="text-[11px] text-muted-foreground">{lead.companyName as string}</p> : null}
                         <div className="flex items-center gap-2 mt-2">
                           {lead.dealValue && (
                             <Badge variant="outline" className="text-[10px]">
