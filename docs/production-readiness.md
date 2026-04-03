@@ -301,8 +301,142 @@ Each item needs real credentials, API integrations, or infrastructure to go live
 
 ---
 
-*Last updated: 2026-04-02 (Phase 7 complete)*
+*Last updated: 2026-04-03 (Phase 9 complete — all addendum gaps closed)*
 *Updated by: Claude Opus 4.6*
+
+---
+
+## Cloud Functions — Schedule Activation (MUST DO before launch)
+
+Currently all 7 scheduled functions are deployed as HTTP-callable (`onRequest`).
+For production, they must be converted to `onSchedule` with Cloud Scheduler.
+
+### Step-by-step activation:
+
+1. **Enable Cloud Scheduler API** in GCP Console:
+   ```
+   gcloud services enable cloudscheduler.googleapis.com --project=YOUR_PROJECT_ID
+   ```
+
+2. **Update `functions/src/index.ts`** — change each function from `onRequest` to `onSchedule`:
+   ```typescript
+   // BEFORE (dev — manual trigger):
+   export const trialEnforcement = onRequest({ region: 'us-central1' }, async (req, res) => { ... });
+
+   // AFTER (prod — auto-scheduled):
+   export const trialEnforcement = onSchedule('0 2 * * *', async (event) => { ... });
+   ```
+
+3. **Schedule reference for each function:**
+
+   | Function | Schedule | Frequency | Purpose |
+   |----------|----------|-----------|---------|
+   | `trialEnforcement` | `0 2 * * *` | Daily 2am UTC | Lock expired trials, send warnings |
+   | `tokenRefresh` | `0 * * * *` | Hourly | Refresh expiring OAuth tokens |
+   | `metricsPoller` | `0 */6 * * *` | Every 6 hours | Pull social analytics from platform APIs |
+   | `approvalEscalation` | `30 * * * *` | Every 30 min | Escalate stalled approvals |
+   | `calendarNotifications` | `*/15 * * * *` | Every 15 min | Send upcoming deadline reminders |
+   | `rankingTracker` | `0 3 * * 1` | Weekly Mon 3am | Track SEO ranking changes |
+   | `contentDecayMonitor` | `0 3 * * 3` | Weekly Wed 3am | Flag stale content |
+
+4. **Redeploy:**
+   ```
+   cd functions && npm run build && firebase deploy --only functions
+   ```
+
+5. **Verify in GCP Console** → Cloud Scheduler → confirm all 7 jobs appear with correct cron expressions.
+
+---
+
+## Cloud Tasks — Queue Configuration (MUST DO before launch)
+
+Cloud Tasks handles retry-safe batch operations. Without it, bulk email sends,
+CRM webhook delivery, and scheduled publishing will not have proper retry logic.
+
+### Step-by-step setup:
+
+1. **Enable Cloud Tasks API:**
+   ```
+   gcloud services enable cloudtasks.googleapis.com --project=YOUR_PROJECT_ID
+   ```
+
+2. **Create 4 queues:**
+   ```bash
+   # Publishing queue — content publish jobs with retry
+   gcloud tasks queues create publishing-queue \
+     --location=us-central1 \
+     --max-dispatches-per-second=10 \
+     --max-attempts=5 \
+     --min-backoff=10s \
+     --max-backoff=600s
+
+   # Email queue — throttled email sends
+   gcloud tasks queues create email-queue \
+     --location=us-central1 \
+     --max-dispatches-per-second=5 \
+     --max-attempts=3 \
+     --min-backoff=60s \
+     --max-backoff=3600s
+
+   # CRM queue — webhook delivery to external CRMs
+   gcloud tasks queues create crm-queue \
+     --location=us-central1 \
+     --max-dispatches-per-second=20 \
+     --max-attempts=5 \
+     --min-backoff=10s \
+     --max-backoff=600s
+
+   # General batch queue — enrichment, reports, imports
+   gcloud tasks queues create batch-queue \
+     --location=us-central1 \
+     --max-dispatches-per-second=50 \
+     --max-attempts=3 \
+     --min-backoff=30s \
+     --max-backoff=1800s
+   ```
+
+3. **Wire tasks in code** — example pattern:
+   ```typescript
+   import { CloudTasksClient } from '@google-cloud/tasks';
+   const client = new CloudTasksClient();
+   const queue = client.queuePath(PROJECT_ID, 'us-central1', 'email-queue');
+
+   await client.createTask({
+     parent: queue,
+     task: {
+       httpRequest: {
+         httpMethod: 'POST',
+         url: `https://${REGION}-${PROJECT_ID}.cloudfunctions.net/sendEmailBatch`,
+         body: Buffer.from(JSON.stringify({ campaignId, batch: subscriberIds })).toString('base64'),
+         headers: { 'Content-Type': 'application/json' },
+       },
+       scheduleTime: { seconds: Date.now() / 1000 + delaySeconds },
+     },
+   });
+   ```
+
+4. **Add `@google-cloud/tasks` dependency:**
+   ```
+   cd functions && npm install @google-cloud/tasks
+   ```
+
+5. **Env vars needed:**
+   - `GCP_PROJECT_ID` — your Firebase project ID
+   - `GCP_LOCATION` — `us-central1` (or your region)
+
+### Which features use Cloud Tasks:
+
+| Queue | Feature | Operation |
+|-------|---------|-----------|
+| `publishing-queue` | F3 | Scheduled content publishing with retry |
+| `email-queue` | F11 | Bulk campaign sends, drip sequences |
+| `crm-queue` | F15 | CRM webhook delivery (HubSpot, Pipedrive, etc.) |
+| `batch-queue` | F15 | Lead enrichment batches |
+| `batch-queue` | F14 | Client report PDF generation |
+| `batch-queue` | F16 | DAM auto-tagging on upload |
+| `batch-queue` | Phase 9 | Bulk schedule CSV processing |
+
+---
 
 ## Summary: What's Needed to Go Live
 
@@ -311,16 +445,20 @@ Each item needs real credentials, API integrations, or infrastructure to go live
 2. `STRIPE_SECRET_KEY` + `STRIPE_PUBLISHABLE_KEY` — real billing
 3. `SENDGRID_API_KEY` or `RESEND_API_KEY` — real email sending
 4. At least 2 social platform OAuth apps (LinkedIn + Instagram recommended)
-5. Enable Cloud Function schedules (flip onRequest → onSchedule)
-6. Custom domain + update OAuth redirect URIs
+5. Enable Cloud Function schedules (see section above)
+6. Create Cloud Tasks queues (see section above)
+7. Custom domain + update OAuth redirect URIs
 
 ### Nice-to-have for launch
-7. `DATAFORSEO_LOGIN` — real SEO keyword data
-8. `VERTEX_AI_PROJECT_ID` — real image generation
-9. Firebase Secret Manager for token encryption
-10. BigQuery for long-term analytics
+8. `DATAFORSEO_LOGIN` — real SEO keyword data
+9. `VERTEX_AI_PROJECT_ID` — real image generation
+10. Firebase Secret Manager for token encryption keys
+11. BigQuery dataset for long-term analytics
+12. `BRAND24_API_KEY` — premium social listening ($79/mo)
+13. `CLEARBIT_API_KEY` or `APOLLO_API_KEY` — lead enrichment
+14. `SHORT_LINK_DOMAIN` — custom short-link domain for branded links
 
-### Total env vars needed: ~20 keys across 10 services
+### Total env vars needed: ~25 keys across 12 services
 
 ---
 

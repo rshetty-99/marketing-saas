@@ -206,6 +206,72 @@ of competitive research to find missing fields and features:
 - Mock image generation (Vertex AI for prod)
 - All dimension presets + 8 style presets, brand colors auto-injected
 
+## Additional Feature Pipeline Notes (F9–F16)
+
+### Stack (locked v5.1)
+Next.js 16 (App Router) on Firebase App Hosting. Clerk for auth.
+Firebase Cloud Functions + Cloud Tasks for background jobs.
+BigQuery for analytics. Never use DALL-E or Stability AI.
+
+### Image Generation — Nano Banana 2 via Vertex AI ONLY
+ALL image generation uses Nano Banana 2 via Vertex AI.
+Env vars: `VERTEX_AI_PROJECT_ID`, `VERTEX_AI_LOCATION`, `VERTEX_AI_NB2_MODEL_ID`
+Never substitute with DALL-E, Stability AI, or Midjourney.
+
+### DAM → Image Generation Build Order (F16 → F13)
+F16 (DAM) must always be built before F13 (Image Generation).
+DAM provides real brand assets (logos, photography) injected as base64
+into Nano Banana 2 generation calls. Without F16, image gen produces
+generic output instead of pixel-accurate branded creatives.
+
+### OAuth Security (F9, F3)
+All OAuth tokens MUST be encrypted using AES-256-GCM before Firestore write.
+Implementation: `src/lib/security/token-encryption.ts` + `src/lib/f9/social-service.ts`
+Dev: 32-byte key from env or fallback. Prod: Firebase Secret Manager.
+Tokens are NEVER returned in API responses — `listConnections()` strips them.
+
+### External API Rate Limits (F10, F12)
+External API calls (DataForSEO, Brand24, Clearbit) must go through
+`src/lib/integrations/rate-limiter.ts`. Never call directly from route handlers.
+Per-platform, per-connection rate limits enforced in-memory.
+Use Cloud Tasks queue pattern for batch operations.
+
+### Lead Gen Public Endpoint (F15)
+POST `/api/crm/leads` is a PUBLIC endpoint — no Clerk auth.
+Rate limit: 10 req/min per form ID. CAPTCHA verification required.
+Form submissions from external sites cannot authenticate with Clerk.
+
+### Client Isolation (F14)
+Every Firestore query in client-scoped routes MUST include BOTH
+`agencyWorkspaceId` AND `clientId` filters. Single-filter queries are a
+security bug. Firestore rules enforce dual-scope at the database level.
+
+### Image Storage Lifecycle (F13, F16)
+After uploading to Firebase Storage, always write the `storagePath` (gs:// path)
+to Firestore alongside the download URL. The download URL can expire; the
+storagePath is needed for deletion and signed URL regeneration.
+
+### Email Compliance (F11, F15)
+Every email send MUST check suppression list before dispatch.
+Unsubscribe endpoint (`/api/email/unsubscribe`) is always public (no Clerk auth).
+CAN-SPAM: physical address + unsubscribe link mandatory in every campaign.
+GDPR: double opt-in supported, consent timestamps stored with records.
+
+### Social Listening (F12) — Brand24 Integration
+Brand24 is $79/month (Starter plan). Optional upgrade path.
+DIY approach: free platform APIs + Claude sentiment analysis.
+Config: `BRAND24_API_KEY` env var. When absent, mock data used.
+
+### Cloud Functions Schedule (Production)
+7 functions need Cloud Scheduler activation for production:
+- trialEnforcement: `0 2 * * *` (daily 2am)
+- tokenRefresh: `0 * * * *` (hourly)
+- metricsPoller: `0 */6 * * *` (every 6 hours)
+- approvalEscalation: `30 * * * *` (every 30 min)
+- calendarNotifications: `*/15 * * * *` (every 15 min)
+- rankingTracker: `0 3 * * 1` (weekly Monday 3am)
+- contentDecayMonitor: `0 3 * * 3` (weekly Wednesday 3am)
+
 ## Key Specifications
 - RBAC: docs/rbac-specification.md (v2.0) — authoritative source for all roles & permissions
 - Production readiness: docs/production-readiness.md — tracks all mock→prod swap items
