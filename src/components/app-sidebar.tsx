@@ -49,6 +49,7 @@ import {
   Bot,
   MessageSquare,
   Tag,
+  Ear,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -96,6 +97,7 @@ const NAV_SECTIONS: NavSection[] = [
       { title: 'Landing Pages', url: '/dashboard/landing-pages', icon: FileCode, permission: 'content.create_edit_drafts' },
       { title: 'Chatbot', url: '/dashboard/chatbot', icon: Bot, permission: 'content.view' },
       { title: 'Messaging', url: '/dashboard/messaging', icon: MessageSquare, permission: 'inbox.view' },
+      { title: 'Listening', url: '/dashboard/listening', icon: Ear, permission: 'analytics.view_dashboard' },
     ],
   },
   {
