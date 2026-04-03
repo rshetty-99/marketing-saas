@@ -320,4 +320,74 @@ Each item needs real credentials, API integrations, or infrastructure to go live
 9. Firebase Secret Manager for token encryption
 10. BigQuery for long-term analytics
 
-### Total env vars needed: ~15 keys across 6 services
+### Total env vars needed: ~20 keys across 10 services
+
+---
+
+## Phase 9: Marketing Tools (all [DEV] — mock implementations)
+
+### A/B Testing Engine
+- [DEV] Variant tracking, auto-winner selection — mock impression/click counting
+  - **To go PROD:** Wire variant serving into content delivery, add real statistical significance calculation
+
+### Client Report Builder
+- [DEV] PDF report generation — mock file URL
+  - **To go PROD:** Integrate React PDF renderer, upload to Firebase Storage, wire Cloud Function for scheduled sends
+  - **Blocked on:** `@react-pdf/renderer` setup
+
+### Link Shortener + UTM Builder
+- [DEV] Short link creation — mock domain `aura.link`
+  - **To go PROD:** Set `SHORT_LINK_DOMAIN`, configure redirect endpoint on custom domain, add click tracking analytics
+  - **Blocked on:** Custom short-link domain setup
+
+### Hashtag Research
+- [DEV] Hashtag analytics — mock data (postCount, difficulty, trending)
+  - **To go PROD:** Integrate RapidAPI Instagram/TikTok hashtag endpoints or Later API
+  - **Blocked on:** `RAPIDAPI_KEY` or equivalent
+
+### Bulk Scheduling / CSV Import
+- [DEV] CSV parsing and batch content creation — functional with Firestore batch writes
+  - **To go PROD:** Add file upload to Firebase Storage, background processing via Cloud Tasks
+
+### Content Library / Snippets
+- [DEV] Full CRUD operational — no production deps needed
+  - **To go PROD:** Ready (pure Firestore feature)
+
+### Saved Replies
+- [DEV] Full CRUD operational — no production deps needed
+  - **To go PROD:** Ready (pure Firestore feature)
+
+### AI Content Scoring
+- [DEV] Rule-based scoring (readability, hooks, CTAs)
+  - **To go PROD:** Replace with Claude API analysis for brand alignment, engagement prediction, emotional tone
+  - **Blocked on:** `ANTHROPIC_API_KEY`
+
+### Influencer Management
+- [DEV] Manual influencer CRM — full CRUD, campaign tracking
+  - **To go PROD:** Integrate influencer discovery API (e.g., Upfluence, Modash, or HypeAuditor)
+  - **Blocked on:** `INFLUENCER_API_KEY`
+
+### Video Editor
+- [DEV] Project management — mock render output
+  - **To go PROD:** Deploy FFmpeg Cloud Function for server-side rendering, or integrate Creatomate API
+  - **Blocked on:** Cloud Function + FFmpeg binary or `CREATOMATE_API_KEY`
+
+### Ad Campaign Management
+- [DEV] Campaign CRUD with mock performance data
+  - **To go PROD:** Integrate Meta Marketing API, Google Ads API, LinkedIn Campaign Manager API
+  - **Blocked on:** `META_MARKETING_TOKEN`, `GOOGLE_ADS_DEVELOPER_TOKEN`, `LINKEDIN_ADS_TOKEN`
+
+### Visual Workflow Builder
+- [DEV] Node/edge storage — no execution engine
+  - **To go PROD:** Wire workflow execution into existing automation engine (Phase 7)
+  - **Blocked on:** Workflow executor integration
+
+### Competitor Benchmarking
+- [DEV] Manual competitor profiles + snapshot storage
+  - **To go PROD:** Integrate social data APIs for automated polling (Sprout Social API or custom scrapers)
+  - **Blocked on:** Platform API access
+
+### RSS Auto-Posting
+- [DEV] Feed configuration + item storage
+  - **To go PROD:** Deploy Cloud Function to poll RSS feeds on interval, auto-create content drafts
+  - **Blocked on:** Cloud Function scheduler activation

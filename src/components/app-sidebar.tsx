@@ -45,6 +45,10 @@ import {
   Building2,
   ClipboardCheck,
   FileText,
+  FileCode,
+  Bot,
+  MessageSquare,
+  Tag,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -89,6 +93,9 @@ const NAV_SECTIONS: NavSection[] = [
       { title: 'SEO', url: '/dashboard/seo', icon: Search, permission: 'seo.view_reports' },
       { title: 'Email', url: '/dashboard/email', icon: Mail, permission: 'email.view_analytics' },
       { title: 'Leads', url: '/dashboard/leads', icon: Users, permission: 'leads.create' },
+      { title: 'Landing Pages', url: '/dashboard/landing-pages', icon: FileCode, permission: 'content.create_edit_drafts' },
+      { title: 'Chatbot', url: '/dashboard/chatbot', icon: Bot, permission: 'content.view' },
+      { title: 'Messaging', url: '/dashboard/messaging', icon: MessageSquare, permission: 'inbox.view' },
     ],
   },
   {
@@ -99,6 +106,7 @@ const NAV_SECTIONS: NavSection[] = [
       { title: 'Team', url: '/dashboard/team', icon: Users, permission: 'workspace.invite_members' },
       { title: 'Clients', url: '/dashboard/clients', icon: Building2, permission: 'clients.switch_context', agencyOnly: true },
       { title: 'Billing', url: '/dashboard/billing', icon: CreditCard, permission: 'billing.view' },
+      { title: 'White Label', url: '/dashboard/settings/white-label', icon: Tag, permission: 'workspace.update_settings', agencyOnly: true },
       { title: 'Settings', url: '/dashboard/settings', icon: Settings, permission: 'workspace.update_settings' },
     ],
   },
