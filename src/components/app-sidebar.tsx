@@ -73,6 +73,7 @@ import {
   ShieldCheck,
   LayoutGrid,
   ArrowDownToLine,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -94,6 +95,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Overview',
     items: [
       { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+      { title: 'Cortex', url: '/dashboard/cortex', icon: Sparkles },
       { title: 'Inbox', url: '/dashboard/inbox', icon: Mail },
       { title: 'Saved Replies', url: '/dashboard/saved-replies', icon: MessageSquareText, permission: 'inbox.view' },
     ],

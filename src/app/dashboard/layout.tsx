@@ -10,6 +10,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { SoftLockBanner } from '@/components/features/F0/SoftLockBanner';
+import { CortexProvider } from '@/components/cortex/CortexProvider';
 import type { ReactNode } from 'react';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
@@ -70,7 +71,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         />
         <SidebarInset>
           {workspaceStatus === 'soft_locked' && <SoftLockBanner />}
-          {children}
+          <CortexProvider
+            workspaceId={result.workspaceId}
+            userId={userId}
+            workspaceName={workspaceName}
+            accountType={accountType}
+          >
+            {children}
+          </CortexProvider>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
