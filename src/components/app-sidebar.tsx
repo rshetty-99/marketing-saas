@@ -73,6 +73,7 @@ import {
   ShieldCheck,
   LayoutGrid,
   ArrowDownToLine,
+  Newspaper,
   Sparkles,
   type LucideIcon,
 } from 'lucide-react';
@@ -115,6 +116,7 @@ const NAV_SECTIONS: NavSection[] = [
       { title: 'Images', url: '/dashboard/images', icon: Image, permission: 'images.generate' },
       { title: 'Video', url: '/dashboard/video', icon: Film, permission: 'content.create_edit_drafts' },
       { title: 'Snippets', url: '/dashboard/snippets', icon: BookOpen, permission: 'content.view' },
+      { title: 'Blog', url: '/dashboard/blog', icon: Newspaper, permission: 'blog.create' },
       { title: 'Localization', url: '/dashboard/localization', icon: Languages, permission: 'content.view' },
     ],
   },

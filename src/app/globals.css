@@ -356,3 +356,105 @@
     background-position: 200% 0;
   }
 }
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(30px, -30px); }
+  66% { transform: translate(-20px, 20px); }
+}
+
+@keyframes ticker-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes ticker-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FILM GRAIN TEXTURE OVERLAY
+   Adds cinematic depth to marketing pages.
+   Apply class "grain-overlay" to any container.
+   ═══════════════════════════════════════════════════════════ */
+.grain-overlay {
+  position: relative;
+}
+.grain-overlay::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  animation: grain 0.5s steps(1) infinite;
+}
+.dark .grain-overlay::after {
+  opacity: 0.05;
+}
+
+@keyframes grain {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-5%, -5%); }
+  40%  { transform: translate(3%, 7%); }
+  60%  { transform: translate(-7%, 3%); }
+  80%  { transform: translate(5%, -3%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GRADIENT MESH ORBS
+   Animated blurred gradient circles for ambient backgrounds.
+   Apply class "gradient-mesh" to a container.
+   ═══════════════════════════════════════════════════════════ */
+.gradient-mesh {
+  position: relative;
+  overflow: hidden;
+}
+.gradient-mesh::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-brand-orange) 0%, transparent 70%);
+  opacity: 0.07;
+  top: -200px;
+  right: -200px;
+  animation: float 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.gradient-mesh > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dark .gradient-mesh::before {
+  opacity: 0.10;
+}
+
+/* Second orb via a wrapper element */
+.gradient-mesh-dual::after {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-brand-indigo) 0%, transparent 70%);
+  opacity: 0.06;
+  bottom: -150px;
+  left: -150px;
+  animation: float 25s ease-in-out infinite reverse;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .gradient-mesh-dual::after {
+  opacity: 0.08;
+}
