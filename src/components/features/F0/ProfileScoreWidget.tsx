@@ -9,6 +9,7 @@ interface ProfileScoreWidgetProps {
   score: number;
   maxScore: number;
   onDismiss: () => void;
+  onViewChecklist?: () => void;
   dismissed?: boolean;
 }
 
@@ -16,6 +17,7 @@ export function ProfileScoreWidget({
   score,
   maxScore,
   onDismiss,
+  onViewChecklist,
   dismissed,
 }: ProfileScoreWidgetProps) {
   const percentage = useMemo(() => {
@@ -78,13 +80,22 @@ export function ProfileScoreWidget({
           </span>
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
           <p className="text-heading-md font-display text-foreground">
             Complete your profile
           </p>
           <p className="text-body-sm font-body text-muted-foreground">
             {score} of {maxScore} tasks done
           </p>
+          {onViewChecklist && (
+            <button
+              onClick={onViewChecklist}
+              className="text-body-sm font-ui font-medium text-brand-orange hover:underline text-left mt-0.5"
+              data-testid="profile-score-view-checklist"
+            >
+              View checklist &rarr;
+            </button>
+          )}
         </div>
       </CardContent>
     </Card>

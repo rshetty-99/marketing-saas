@@ -31,8 +31,13 @@ export default async function DashboardPage() {
   const scoreData = scoreDoc.data();
 
   const trialEndsAt = wsData?.trialEndsAt?.toDate()?.toISOString() ?? null;
+  const accountType = (wsData?.accountType as string) ?? 'freelancer';
   const profileScore = scoreData
-    ? { score: scoreData.score ?? 0, maxScore: scoreData.maxScore ?? 100 }
+    ? {
+        score: (scoreData.score as number) ?? 0,
+        maxScore: (scoreData.maxScore as number) ?? 100,
+        completedActions: (scoreData.completedActions as string[]) ?? [],
+      }
     : null;
 
   return (
@@ -58,6 +63,7 @@ export default async function DashboardPage() {
           trialEndsAt={trialEndsAt ?? undefined}
           profileScore={profileScore ?? undefined}
           workspaceId={wsId}
+          accountType={accountType}
         />
 
         {/* Quick stats */}

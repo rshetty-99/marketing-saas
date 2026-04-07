@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/sidebar';
 import { TrialBadge } from '@/components/features/F0/TrialBadge';
 import { UserButton } from '@clerk/nextjs';
+import { ThemeToggle } from '@/components/marketing/ThemeToggle';
 import {
   LayoutDashboard,
   PenTool,
@@ -291,13 +292,14 @@ export function AppSidebar({
                     },
                   }}
                 />
-                <div className="flex flex-col gap-0.5 leading-none">
+                <div className="flex flex-col gap-0.5 leading-none flex-1">
                   <span className="font-ui text-sm">Account</span>
                   <span className="text-label text-muted-foreground">
                     <Globe className="inline size-2.5 mr-0.5" />
                     Manage
                   </span>
                 </div>
+                <ThemeToggle />
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
