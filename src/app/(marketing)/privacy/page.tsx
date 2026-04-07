@@ -4,27 +4,49 @@ import { LegalPageLayout } from '@/components/marketing/LegalPageLayout';
 
 export default function PrivacyPage() {
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="March 15, 2026">
-      <p>
-        At Aura.ai (&quot;Aura&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI-powered marketing platform, including our website, applications, and services (collectively, the &quot;Platform&quot;).
-      </p>
+    <LegalPageLayout
+      title="Privacy Policy"
+      subtitle="How Aura.ai collects, uses, and protects your information."
+      lastUpdated="March 15, 2026"
+      effectiveDate="March 15, 2026"
+      version="v2.1"
+    >
+      <div className="legal-highlight">
+        <p>
+          <strong>Summary:</strong> We collect only what we need to run the platform. We never sell your data.
+          Your content belongs to you. OAuth tokens are encrypted. You can delete your data at any time.
+        </p>
+      </div>
 
       <h2>Information We Collect</h2>
+
       <h3>Information you provide</h3>
       <p>
-        When you create an account, we collect your name, email address, organization name, and role. During onboarding, you may provide additional business information including your industry, target audience, brand voice preferences, and marketing goals.
+        When you create an account, we collect your name, email address, organization name, and role. During
+        onboarding, you may provide additional business information including your industry, target audience,
+        brand voice preferences, and marketing goals.
       </p>
+
       <h3>Social media account data</h3>
       <p>
-        When you connect social media accounts (LinkedIn, Twitter/X, Instagram, Facebook, TikTok, YouTube, Pinterest, or Google Business Profile), we receive OAuth tokens and profile information necessary to publish content and retrieve analytics on your behalf. We encrypt all OAuth tokens using AES-256-GCM before storing them.
+        When you connect social media accounts (LinkedIn, Twitter/X, Instagram, Facebook, TikTok, YouTube,
+        Pinterest, or Google Business Profile), we receive OAuth tokens and profile information necessary to
+        publish content and retrieve analytics on your behalf. <strong>We encrypt all OAuth tokens using
+        AES-256-GCM before storing them.</strong>
       </p>
+
       <h3>Content and usage data</h3>
       <p>
-        We collect content you create or generate using our AI tools, including drafts, published posts, email campaigns, images, and SEO analyses. We also collect usage data such as feature interactions, content performance metrics, and platform preferences.
+        We collect content you create or generate using our AI tools, including drafts, published posts, email
+        campaigns, images, and SEO analyses. We also collect usage data such as feature interactions, content
+        performance metrics, and platform preferences.
       </p>
+
       <h3>Automatically collected information</h3>
       <p>
-        We automatically collect device information, IP addresses, browser type, operating system, referral URLs, and interaction data through cookies and similar technologies.
+        We automatically collect device information, IP addresses (hashed for privacy), browser type, operating
+        system, referral URLs, and interaction data. We do <strong>not</strong> use third-party tracking cookies.
+        Blog analytics use privacy-safe hashed visitor identifiers with daily rotating salts.
       </p>
 
       <h2>How We Use Your Information</h2>
@@ -34,92 +56,166 @@ export default function PrivacyPage() {
         <li>Generate AI-powered content recommendations and marketing suggestions</li>
         <li>Publish content to connected social media accounts on your behalf</li>
         <li>Compile analytics and performance reports across your connected channels</li>
-        <li>Process subscription payments and manage billing</li>
+        <li>Process subscription payments and manage billing through Stripe</li>
         <li>Send transactional emails (account verification, approval notifications, billing receipts)</li>
         <li>Provide customer support and respond to inquiries</li>
         <li>Detect and prevent fraud, abuse, and security incidents</li>
         <li>Comply with legal obligations</li>
       </ul>
 
-      <h2>Data Sharing</h2>
+      <h2>AI Content Generation</h2>
+      <div className="legal-highlight">
+        <p>
+          <strong>Important:</strong> Content you generate using Aura&apos;s AI tools belongs to you. We do not
+          use your generated content to train AI models. Your prompts and outputs are processed by our AI
+          provider (Anthropic Claude) under a data processing agreement that prohibits training on customer data.
+        </p>
+      </div>
       <p>
-        We do not sell your personal information. We share data only in the following circumstances:
+        When you use AI features (content generation, SEO analysis, image creation), your input prompts and
+        brand context are sent to our AI infrastructure. The AI provider processes these in real-time and does
+        not retain your data after generating the response.
       </p>
+
+      <h2>Data Sharing</h2>
+      <p>We do not sell your personal information. We share data only in the following circumstances:</p>
       <ul>
-        <li><strong>Service providers:</strong> We use third-party services including Clerk (authentication), Firebase/Google Cloud Platform (hosting and storage), Stripe (payments), and AI model providers to operate the Platform.</li>
-        <li><strong>Social media platforms:</strong> When you use our publishing features, content is transmitted to the social media platforms you have connected.</li>
-        <li><strong>Agency-client relationships:</strong> If you are a client of an agency using Aura, your agency may access content and analytics within their workspace as configured by their account settings.</li>
-        <li><strong>Legal requirements:</strong> We may disclose information to comply with applicable law, regulation, legal process, or enforceable governmental request.</li>
+        <li>
+          <strong>Service providers:</strong> We use third-party services including Clerk (authentication),
+          Firebase/Google Cloud Platform (hosting and storage), Stripe (payments), Anthropic (AI), and
+          Vertex AI (image generation) to operate the Platform.
+        </li>
+        <li>
+          <strong>Social media platforms:</strong> When you use our publishing features, content is transmitted
+          to the social media platforms you have connected. Each platform&apos;s own privacy policy applies to that data.
+        </li>
+        <li>
+          <strong>Agency-client relationships:</strong> If you are a client of an agency using Aura, your agency
+          may access content and analytics within their workspace as configured by their account settings.
+          Client data is isolated per workspace — agencies cannot see other agencies&apos; data.
+        </li>
+        <li>
+          <strong>Legal requirements:</strong> We may disclose information to comply with applicable law,
+          regulation, legal process, or enforceable governmental request.
+        </li>
       </ul>
 
       <h2>Social Media Data</h2>
       <p>
-        When you connect social media accounts to Aura, we access only the data necessary to provide our services. This includes profile information, post performance metrics, audience demographics, and publishing capabilities. We do not access private messages or personal social media content unrelated to your marketing activities.
+        When you connect social media accounts to Aura, we access only the data necessary to provide our
+        services. This includes profile information, post performance metrics, audience demographics, and
+        publishing capabilities.
       </p>
       <p>
-        You can disconnect any social media account at any time from your workspace settings. Upon disconnection, we stop collecting new data from that platform. Previously collected analytics data is retained according to our data retention policy.
+        <strong>We do not access:</strong> private messages, personal social media content unrelated to your
+        marketing activities, or data from accounts you have not explicitly connected.
+      </p>
+      <p>
+        You can disconnect any social media account at any time from your workspace settings. Upon disconnection,
+        we stop collecting new data and revoke our access tokens. Previously collected analytics data is retained
+        according to our data retention policy.
       </p>
 
-      <h2>AI-Generated Content</h2>
+      <h2>Cookies &amp; Tracking</h2>
       <p>
-        Content generated by our AI features is created using your inputs (prompts, brand voice settings, and content preferences) combined with our AI models. We do not use your generated content to train AI models for other customers. Your content remains yours.
+        The Aura platform uses essential cookies for authentication (Clerk session cookies) and preference
+        storage (theme selection). We do <strong>not</strong> use third-party advertising cookies or cross-site
+        tracking pixels.
       </p>
       <p>
-        AI-generated content may include text, images, email copy, and SEO recommendations. While we strive for high-quality output, you are responsible for reviewing and approving all AI-generated content before publication.
+        Our blog analytics system uses privacy-safe hashed visitor identifiers (SHA-256 with daily rotating
+        salts) instead of cookies. This allows us to count unique visitors without storing personally
+        identifiable information.
       </p>
 
-      <h2>Cookies and Tracking</h2>
-      <p>We use the following types of cookies:</p>
-      <ul>
-        <li><strong>Essential cookies:</strong> Required for authentication, security, and core Platform functionality.</li>
-        <li><strong>Analytics cookies:</strong> Help us understand how users interact with the Platform to improve our services.</li>
-        <li><strong>Preference cookies:</strong> Remember your settings and personalization choices.</li>
-      </ul>
-      <p>
-        You can manage cookie preferences through your browser settings. Disabling essential cookies may prevent you from using certain Platform features.
-      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Cookie</th>
+            <th>Purpose</th>
+            <th>Duration</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>__clerk_session</td>
+            <td>Authentication session</td>
+            <td>Session</td>
+            <td>Essential</td>
+          </tr>
+          <tr>
+            <td>theme</td>
+            <td>Light/dark mode preference</td>
+            <td>1 year</td>
+            <td>Functional</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h2>Data Retention</h2>
+      <p>We retain your data for as long as your account is active. Specific retention periods:</p>
+      <ul>
+        <li><strong>Account data:</strong> Until account deletion</li>
+        <li><strong>Content drafts:</strong> Indefinitely (configurable per workspace)</li>
+        <li><strong>Analytics data:</strong> 365 days by default (configurable)</li>
+        <li><strong>Audit logs:</strong> 730 days (2 years)</li>
+        <li><strong>Inbox messages:</strong> 90 days by default (configurable)</li>
+        <li><strong>Blog analytics:</strong> 365 days</li>
+      </ul>
       <p>
-        We retain your account data for as long as your account is active. Content, analytics, and workspace data are retained for 24 months after account closure unless you request earlier deletion. Billing records are retained for 7 years as required by applicable tax and financial regulations.
-      </p>
-      <p>
-        You can request data export or deletion at any time by contacting us at privacy@aura.ai or through your account settings.
+        Enterprise customers can configure custom retention periods through the compliance settings in
+        their workspace dashboard.
       </p>
 
       <h2>Your Rights</h2>
-      <p>Depending on your jurisdiction, you may have the right to:</p>
+      <p>Depending on your jurisdiction, you may have the following rights:</p>
       <ul>
-        <li>Access the personal information we hold about you</li>
-        <li>Correct inaccurate or incomplete data</li>
-        <li>Request deletion of your personal data</li>
-        <li>Export your data in a portable format</li>
-        <li>Restrict or object to certain data processing activities</li>
-        <li>Withdraw consent where processing is based on consent</li>
-        <li>Lodge a complaint with your local data protection authority</li>
+        <li><strong>Access:</strong> Request a copy of the personal data we hold about you</li>
+        <li><strong>Rectification:</strong> Request correction of inaccurate data</li>
+        <li><strong>Erasure:</strong> Request deletion of your personal data (&quot;right to be forgotten&quot;)</li>
+        <li><strong>Portability:</strong> Receive your data in a structured, machine-readable format</li>
+        <li><strong>Restriction:</strong> Request that we limit processing of your data</li>
+        <li><strong>Objection:</strong> Object to processing based on legitimate interests</li>
+        <li><strong>Withdrawal of consent:</strong> Withdraw previously given consent at any time</li>
       </ul>
       <p>
-        To exercise any of these rights, contact us at <a href="mailto:privacy@aura.ai">privacy@aura.ai</a>. We will respond within 30 days.
+        To exercise any of these rights, submit a data subject request through the Compliance page in your
+        workspace dashboard, or email <a href="mailto:privacy@aura.ai">privacy@aura.ai</a>.
+        We respond to all verified requests within 30 days.
       </p>
 
       <h2>Children&apos;s Privacy</h2>
       <p>
-        Aura is a business-to-business platform designed for professional use. We do not knowingly collect information from children under 16. If we learn that we have collected information from a child under 16, we will delete it promptly.
+        Aura is a business-to-business platform designed for marketing professionals and agencies. We do not
+        knowingly collect information from individuals under the age of 16. If you believe we have collected
+        data from a minor, please contact us immediately at{' '}
+        <a href="mailto:privacy@aura.ai">privacy@aura.ai</a>.
+      </p>
+
+      <h2>International Data Transfers</h2>
+      <p>
+        Aura is hosted on Google Cloud Platform with primary infrastructure in the United States. If you
+        access the Platform from outside the US, your data will be transferred to and processed in the US.
+        We rely on Standard Contractual Clauses (SCCs) and data processing agreements with our sub-processors
+        to ensure adequate data protection for international transfers.
       </p>
 
       <h2>Changes to This Policy</h2>
       <p>
-        We may update this Privacy Policy from time to time. We will notify you of material changes by posting the updated policy on our website and, where appropriate, by sending an email notification. Your continued use of the Platform after changes take effect constitutes your acceptance of the revised policy.
+        We may update this Privacy Policy from time to time. We will notify you of any material changes by
+        posting the new policy on this page, updating the &quot;Last updated&quot; date, and sending a notification
+        through the Platform for significant changes. Your continued use of the Platform after changes
+        constitutes acceptance of the updated policy.
       </p>
 
-      <h2>Contact</h2>
-      <p>
-        If you have questions about this Privacy Policy or our data practices, please contact us:
-      </p>
+      <h2>Contact Us</h2>
+      <p>If you have questions about this Privacy Policy or our data practices, contact us at:</p>
       <ul>
-        <li>Email: <a href="mailto:privacy@aura.ai">privacy@aura.ai</a></li>
-        <li>Address: Aura Technologies Inc., 350 Fifth Avenue, Suite 4500, New York, NY 10118</li>
-        <li>Data Protection Officer: <a href="mailto:dpo@aura.ai">dpo@aura.ai</a></li>
+        <li><strong>Email:</strong> <a href="mailto:privacy@aura.ai">privacy@aura.ai</a></li>
+        <li><strong>Legal team:</strong> <a href="mailto:legal@aura.ai">legal@aura.ai</a></li>
+        <li><strong>Address:</strong> Aura.ai, 123 Innovation Way, Suite 400, New York, NY 10001</li>
+        <li><strong>Data Protection Officer:</strong> <a href="mailto:dpo@aura.ai">dpo@aura.ai</a></li>
       </ul>
     </LegalPageLayout>
   );
