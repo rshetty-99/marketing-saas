@@ -273,6 +273,52 @@ Config: `BRAND24_API_KEY` env var. When absent, mock data used.
 - rankingTracker: `0 3 * * 1` (weekly Monday 3am)
 - contentDecayMonitor: `0 3 * * 3` (weekly Wednesday 3am)
 
+## Autoresearch Engine (Content Quality)
+
+### Pattern: Modify → Score → Keep/Discard → Repeat
+Inspired by Karpathy's autoresearch. Every AI-generated content goes through
+a scoring loop that automatically improves quality before returning to the user.
+
+### Architecture
+- Core engine: `src/lib/autoresearch/engine.ts` (50-line loop)
+- Scorers: `src/lib/autoresearch/scorers/` (SEO, readability, brand voice, platform, email, conversion)
+- Registry: `src/lib/autoresearch/scorers/registry.ts` (15 use case presets)
+- Public API: `src/lib/autoresearch/index.ts` → `autoImprove()` and `scoreContent()`
+- API routes: `/api/autoresearch/improve` (POST) and `/api/autoresearch/score` (POST)
+
+### Usage in Code
+```typescript
+import { autoImprove, scoreContent } from '@/lib/autoresearch';
+
+// Auto-improve with the loop
+const result = await autoImprove('linkedin_post', prompt, {
+  workspaceId, brandVoice, platform: 'linkedin',
+  generateFn: async (p, feedback) => callClaude(p, feedback),
+});
+
+// Score without improving (for display badges)
+const { composite, scores } = await scoreContent('blog_post', content, context);
+```
+
+### Use Cases: blog_post, linkedin_post, twitter_post, instagram_post,
+facebook_post, tiktok_post, youtube_description, email_subject, email_body,
+landing_page, ad_copy, repurpose_to_social, client_report_summary,
+chatbot_response, seo_brief
+
+### Tier-Gated Iterations
+- Starter: 1 iteration (no improvement loop)
+- Growth: 2 iterations
+- Agency: 3 iterations
+- Agency Pro / White-Label: 5 iterations
+
+### Development-Time Plugin
+Install Karpathy's autoresearch plugin for overnight code improvements:
+```
+/plugin marketplace add uditgoenka/autoresearch
+/plugin install autoresearch@autoresearch
+```
+Use for: prompt engineering, SEO algorithm tuning, test coverage improvement.
+
 ## Key Specifications
 - RBAC: docs/rbac-specification.md (v2.0) — authoritative source for all roles & permissions
 - Production readiness: docs/production-readiness.md — tracks all mock→prod swap items
