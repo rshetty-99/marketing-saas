@@ -88,13 +88,15 @@ export function ProfileScoreWidget({
             {score} of {maxScore} tasks done
           </p>
           {onViewChecklist && (
-            <button
-              onClick={onViewChecklist}
-              className="text-body-sm font-ui font-medium text-brand-orange hover:underline text-left mt-0.5"
+            <Button
+              type="button"
+              variant="link"
+              onClick={(e) => { e.stopPropagation(); onViewChecklist(); }}
+              className="text-body-sm font-ui font-medium text-brand-orange hover:underline text-left mt-0.5 p-0 h-auto"
               data-testid="profile-score-view-checklist"
             >
               View checklist &rarr;
-            </button>
+            </Button>
           )}
         </div>
       </CardContent>

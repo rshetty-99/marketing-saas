@@ -32,6 +32,7 @@ const BANNER_CONFIG: Record<
 
 export function CortexDegradationBanner({ level }: CortexDegradationBannerProps) {
   const config = BANNER_CONFIG[level];
+  if (!config) return null;
   const Icon = config.icon;
 
   return (

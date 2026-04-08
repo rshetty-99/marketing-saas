@@ -45,15 +45,14 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
   const authorName = author?.name as string | undefined;
   const authorAvatar = author?.avatar as string | undefined;
 
-  // Format published date
-  const publishedAt = post.publishedAt as Record<string, unknown> | undefined;
-  const publishDate = publishedAt
-    ? new Date((publishedAt._seconds as number) * 1000).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : '';
+  // Format published date — handles both ISO string and Firestore Timestamp
+  const rawDate = post.publishedAt;
+  let publishDate = '';
+  if (typeof rawDate === 'string') {
+    publishDate = new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } else if (rawDate && typeof rawDate === 'object' && '_seconds' in (rawDate as Record<string, unknown>)) {
+    publishDate = new Date(((rawDate as Record<string, unknown>)._seconds as number) * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
 
   const initials = authorName
     ? authorName
@@ -69,11 +68,11 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
       data-testid="blog-card"
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
-      className={featured ? 'col-span-full' : ''}
+      className={`rounded-2xl border border-border bg-card/50 overflow-hidden hover:border-brand-orange/40 transition-colors ${featured ? 'col-span-full' : ''}`}
     >
       <Link href={`/blog/${slug}`} className="group block">
         <div
-          className={`relative overflow-hidden rounded-xl ${
+          className={`relative overflow-hidden ${
             featured ? 'aspect-[21/9]' : 'aspect-video'
           }`}
         >
@@ -100,7 +99,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
           )}
         </div>
 
-        <div className={`mt-4 ${featured ? 'max-w-2xl' : ''}`}>
+        <div className={`p-4 ${featured ? 'max-w-2xl' : ''}`}>
           <h3
             className={`font-display font-semibold text-foreground line-clamp-2 group-hover:text-brand-orange transition-colors ${
               featured ? 'text-2xl md:text-3xl' : 'text-lg'

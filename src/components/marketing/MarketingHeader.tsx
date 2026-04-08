@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUser, UserButton } from '@clerk/nextjs';
 import { ThemeToggle } from './ThemeToggle';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LayoutDashboard } from 'lucide-react';
 
 const NAV_LINKS = [
   { label: 'Features', href: '#features' },
@@ -14,6 +15,7 @@ const NAV_LINKS = [
 ];
 
 export function MarketingHeader() {
+  const { isSignedIn, isLoaded } = useUser();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -67,18 +69,41 @@ export function MarketingHeader() {
           {/* Right side */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Link
-              href="/sign-in"
-              className="hidden sm:inline-flex text-sm font-ui text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/sign-up"
-              className="hidden sm:inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-ui font-medium text-white bg-gradient-to-r from-brand-orange to-brand-indigo hover:opacity-90 transition-opacity shadow-lg shadow-brand-orange/20"
-            >
-              Start Free
-            </Link>
+            {isLoaded && isSignedIn ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-ui font-medium text-foreground hover:text-brand-orange transition-colors"
+                >
+                  <LayoutDashboard className="size-4" />
+                  Dashboard
+                </Link>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: 'size-8 rounded-full',
+                    },
+                  }}
+                />
+              </>
+            ) : isLoaded ? (
+              <>
+                <Link
+                  href="/sign-in"
+                  className="hidden sm:inline-flex text-sm font-ui text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-ui font-medium text-white bg-gradient-to-r from-brand-orange to-brand-indigo hover:opacity-90 transition-opacity shadow-lg shadow-brand-orange/20"
+                >
+                  Start Free
+                </Link>
+              </>
+            ) : (
+              <div className="hidden sm:block w-20 h-8" /> /* Placeholder while loading */
+            )}
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -107,8 +132,16 @@ export function MarketingHeader() {
                 </Link>
               ))}
               <hr className="my-2 border-border" />
-              <Link href="/sign-in" className="px-4 py-3 rounded-xl text-sm font-ui hover:bg-muted transition-colors">Sign in</Link>
-              <Link href="/sign-up" className="mt-1 px-4 py-3 rounded-xl text-sm font-ui font-medium text-center text-white bg-gradient-to-r from-brand-orange to-brand-indigo">Start Free</Link>
+              {isLoaded && isSignedIn ? (
+                <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="px-4 py-3 rounded-xl text-sm font-ui font-medium text-center text-white bg-gradient-to-r from-brand-orange to-brand-indigo flex items-center justify-center gap-2">
+                  <LayoutDashboard className="size-4" /> Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="px-4 py-3 rounded-xl text-sm font-ui hover:bg-muted transition-colors">Sign in</Link>
+                  <Link href="/sign-up" onClick={() => setMobileOpen(false)} className="mt-1 px-4 py-3 rounded-xl text-sm font-ui font-medium text-center text-white bg-gradient-to-r from-brand-orange to-brand-indigo">Start Free</Link>
+                </>
+              )}
             </div>
           </motion.div>
         )}

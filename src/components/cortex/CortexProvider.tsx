@@ -150,11 +150,14 @@ export function CortexProvider({
           return;
         }
 
-        const data: { status: string; level?: DegradationLevel } = await response.json();
-        if (data.status === 'ok') {
+        const data = await response.json();
+        const level = data.level as string;
+        if (level === 'full' || !level) {
           setDegradationLevel(null);
-        } else if (data.level) {
-          setDegradationLevel(data.level);
+        } else if (level === 'degraded' || level === 'slash_only' || level === 'offline') {
+          setDegradationLevel(level);
+        } else {
+          setDegradationLevel(null);
         }
       } catch {
         if (mounted) setDegradationLevel('offline');

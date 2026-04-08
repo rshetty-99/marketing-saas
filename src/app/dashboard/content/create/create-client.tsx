@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Save, Repeat2, Send } from 'lucide-react';
+import { Sparkles, Save, Repeat2, Send, Loader2 } from 'lucide-react';
 
 interface ContentCreateClientProps {
   workspaceId: string;
@@ -73,9 +73,12 @@ export function ContentCreateClient({ workspaceId, userId, userRole }: ContentCr
   const wordCount = content.split(/\s+/).filter(Boolean).length;
   const charCount = content.length;
 
+  const [generateError, setGenerateError] = useState<string | null>(null);
+
   async function handleGenerate() {
     if (!prompt) return;
     setIsGenerating(true);
+    setGenerateError(null);
     try {
       const res = await fetch('/api/content/generate', {
         method: 'POST',
@@ -87,12 +90,28 @@ export function ContentCreateClient({ workspaceId, userId, userRole }: ContentCr
         }),
       });
       const data = await res.json();
-      if (data.draftId) {
+
+      if (data.content) {
+        // Populate the editor with generated content
+        setContent(data.content);
+        if (data.title) setTitle(data.title);
+      } else if (data.draftId) {
+        // Fallback: redirect to the draft
         router.push(`/dashboard/content/create?draft=${data.draftId}`);
         router.refresh();
+      } else if (data.error) {
+        setGenerateError(data.error);
+      } else {
+        // Mock generation when API doesn't return content
+        const channelLabel = CHANNELS.find(c => c.value === channel)?.label ?? 'blog';
+        const typeLabel = CONTENT_TYPES.find(t => t.value === contentType)?.label ?? 'content';
+        const mockTitle = `${prompt.charAt(0).toUpperCase()}${prompt.slice(1, 60)}`;
+        const mockContent = `# ${mockTitle}\n\nThis is an AI-generated ${typeLabel.toLowerCase()} for ${channelLabel}.\n\n## Key Points\n\n- ${prompt}\n- Engaging content tailored for your audience\n- Optimized for ${channelLabel}\n\n## Details\n\nYour AI-generated content about "${prompt}" would appear here. Connect your Anthropic API key to generate real content with Claude AI.\n\n## Call to Action\n\nReady to get started? Try our platform free for 15 days.`;
+        setTitle(mockTitle);
+        setContent(mockContent);
       }
     } catch {
-      // handle error
+      setGenerateError('Failed to generate content. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -143,27 +162,47 @@ export function ContentCreateClient({ workspaceId, userId, userRole }: ContentCr
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* Main editor area */}
         <div className="space-y-4">
+          {/* What are you creating? */}
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="font-ui">Creating:</span>
+            <Badge variant="outline" className="text-xs">{CONTENT_TYPES.find(t => t.value === contentType)?.label ?? 'Blog Post'}</Badge>
+            {channel && <><span>for</span><Badge variant="outline" className="text-xs">{CHANNELS.find(c => c.value === channel)?.label ?? channel}</Badge></>}
+          </div>
+
           {/* AI Generation */}
           <Card className="border-brand-orange/20 bg-brand-orange/5">
             <CardContent className="py-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Describe what you want to create..."
+                  placeholder="Describe what you want to create... e.g., Write a LinkedIn post about selling cotton candy"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && prompt && !isGenerating) handleGenerate(); }}
                   className="flex-1"
                   data-testid="ai-prompt-input"
                 />
                 <Button
                   onClick={handleGenerate}
                   disabled={isGenerating || !prompt}
-                  className="bg-brand-orange hover:bg-brand-orange-hover text-brand-void"
+                  className="bg-brand-orange hover:bg-brand-orange-hover text-brand-void min-w-[120px]"
                   data-testid="generate-button"
                 >
-                  <Sparkles className="size-4 mr-1.5" />
-                  {isGenerating ? 'Generating...' : 'Generate'}
+                  {isGenerating ? (
+                    <><Loader2 className="size-4 mr-1.5 animate-spin" />Generating...</>
+                  ) : (
+                    <><Sparkles className="size-4 mr-1.5" />Generate</>
+                  )}
                 </Button>
               </div>
+              {generateError && (
+                <p className="mt-2 text-sm text-destructive">{generateError}</p>
+              )}
+              {isGenerating && (
+                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="size-3 animate-spin text-brand-orange" />
+                  <span>AI is writing your {CONTENT_TYPES.find(t => t.value === contentType)?.label.toLowerCase() ?? 'content'}...</span>
+                </div>
+              )}
             </CardContent>
           </Card>
 

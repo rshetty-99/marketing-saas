@@ -7,11 +7,18 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 export async function listAssets(workspaceId: string, filters: { folderId?: string; assetType?: string; limit?: number } = {}) {
   let query = adminDb.collection('workspaces').doc(workspaceId).collection('dam_assets')
-    .where('status', '==', 'active').orderBy('createdAt', 'desc').limit(filters.limit ?? 50) as FirebaseFirestore.Query;
+    .where('status', '==', 'active').limit(filters.limit ?? 50) as FirebaseFirestore.Query;
   if (filters.folderId) query = query.where('folderId', '==', filters.folderId);
   if (filters.assetType) query = query.where('assetType', '==', filters.assetType);
   const snap = await query.get();
-  return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  // Sort in-memory to avoid composite index requirement
+  const docs = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return docs.sort((a, b) => {
+    const aTime = (a as Record<string, unknown>).createdAt;
+    const bTime = (b as Record<string, unknown>).createdAt;
+    if (!aTime || !bTime) return 0;
+    return String(bTime) > String(aTime) ? 1 : -1;
+  });
 }
 
 export async function createAsset(workspaceId: string, data: Record<string, unknown>, createdBy: string) {

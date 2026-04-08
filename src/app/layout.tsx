@@ -7,8 +7,10 @@ import {
   Syne,
 } from "next/font/google";
 import "./globals.css";
+import { Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/features/auth/AuthHeader";
+import { RouteLoadingBar } from "@/components/ui/route-loading-bar";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -78,6 +80,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ClerkProvider>
+          <Suspense fallback={null}>
+            <RouteLoadingBar />
+          </Suspense>
           <AppHeader />
           {children}
         </ClerkProvider>

@@ -73,13 +73,20 @@ export async function listPosts(
   workspaceId: string,
   filters: { status?: string; category?: string; featured?: boolean; limit?: number; offset?: number } = {},
 ) {
-  let query = postsCol(workspaceId).orderBy('createdAt', 'desc') as FirebaseFirestore.Query;
+  let query = postsCol(workspaceId).limit(filters.limit ?? 12) as FirebaseFirestore.Query;
   if (filters.status) query = query.where('status', '==', filters.status);
   if (filters.category) query = query.where('category', '==', filters.category);
   if (filters.featured) query = query.where('featured', '==', true);
-  query = query.limit(filters.limit ?? 12);
   const snap = await query.get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  // Sort in-memory to avoid composite index requirement
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => {
+      const aTime = (a as Record<string, unknown>).createdAt;
+      const bTime = (b as Record<string, unknown>).createdAt;
+      if (!aTime || !bTime) return 0;
+      return String(bTime) > String(aTime) ? 1 : -1;
+    });
 }
 
 export async function listPublishedPosts(workspaceId: string, filters: { category?: string; limit?: number } = {}) {

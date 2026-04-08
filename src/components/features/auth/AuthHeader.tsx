@@ -16,12 +16,15 @@ import { ThemeToggle } from '@/components/theme-toggle';
 export function AppHeader() {
   const pathname = usePathname();
   const isAuthRoute =
+    pathname === '/' ||
     pathname.startsWith('/sign-in') ||
     pathname.startsWith('/sign-up') ||
     pathname.startsWith('/forgot-password') ||
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/onboarding') ||
-    pathname.startsWith('/auth-callback');
+    pathname.startsWith('/auth-callback') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/portal');
 
   if (isAuthRoute) return null;
 

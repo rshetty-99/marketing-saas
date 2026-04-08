@@ -161,7 +161,6 @@ export async function listDrafts(
     .collection('workspaces')
     .doc(workspaceId)
     .collection('content_drafts')
-    .orderBy('updatedAt', 'desc')
     .limit(filters.limit ?? 50) as FirebaseFirestore.Query;
 
   if (filters.status) query = query.where('status', '==', filters.status);
@@ -170,7 +169,15 @@ export async function listDrafts(
   if (filters.assignedTo) query = query.where('assignedTo', '==', filters.assignedTo);
 
   const snapshot = await query.get();
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  // Sort in-memory to avoid composite index requirement
+  return snapshot.docs
+    .map((doc) => ({ id: doc.id, ...doc.data() }))
+    .sort((a, b) => {
+      const aTime = (a as Record<string, unknown>).updatedAt;
+      const bTime = (b as Record<string, unknown>).updatedAt;
+      if (!aTime || !bTime) return 0;
+      return String(bTime) > String(aTime) ? 1 : -1;
+    });
 }
 
 // ─── Get Draft ──────────────────────────────────────────────
