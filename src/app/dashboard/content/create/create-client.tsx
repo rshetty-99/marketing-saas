@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Save, Repeat2, Send, Loader2 } from 'lucide-react';
+import { Sparkles, Save, Repeat2, Send, Loader2, Zap, TrendingUp } from 'lucide-react';
 
 interface ContentCreateClientProps {
   workspaceId: string;
@@ -75,6 +75,71 @@ export function ContentCreateClient({ workspaceId, userId, userRole }: ContentCr
 
   const [generateError, setGenerateError] = useState<string | null>(null);
 
+  // Autoresearch scoring state
+  const [scores, setScores] = useState<{ name: string; score: number; feedback: string[] }[] | null>(null);
+  const [compositeScore, setCompositeScore] = useState<number | null>(null);
+  const [isScoring, setIsScoring] = useState(false);
+  const [isImproving, setIsImproving] = useState(false);
+
+  async function handleScore(contentToScore: string) {
+    if (!contentToScore.trim()) return;
+    setIsScoring(true);
+    try {
+      const res = await fetch('/api/content/auto-improve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'score',
+          content: contentToScore,
+          useCase: contentType,
+          platform: channel || undefined,
+          title: title || undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { composite: number; scores: { name: string; score: number; feedback: string[] }[] };
+        setCompositeScore(data.composite);
+        setScores(data.scores);
+      }
+    } catch {
+      // Score failure is non-critical
+    } finally {
+      setIsScoring(false);
+    }
+  }
+
+  async function handleAutoImprove() {
+    if (!content.trim() || !prompt.trim()) return;
+    setIsImproving(true);
+    try {
+      const res = await fetch('/api/content/auto-improve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'improve',
+          content,
+          prompt,
+          useCase: contentType,
+          platform: channel || undefined,
+          contentType,
+          title: title || undefined,
+          maxIterations: 3,
+          threshold: 80,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { content: string; compositeScore: number; scores: { name: string; score: number; feedback: string[] }[] };
+        setContent(data.content);
+        setCompositeScore(data.compositeScore);
+        setScores(data.scores);
+      }
+    } catch {
+      // Improve failure is non-critical
+    } finally {
+      setIsImproving(false);
+    }
+  }
+
   async function handleGenerate() {
     if (!prompt) return;
     setIsGenerating(true);
@@ -95,6 +160,8 @@ export function ContentCreateClient({ workspaceId, userId, userRole }: ContentCr
         // Populate the editor with generated content
         setContent(data.content);
         if (data.title) setTitle(data.title);
+        // Auto-score the generated content
+        handleScore(data.content);
       } else if (data.draftId) {
         // Fallback: redirect to the draft
         router.push(`/dashboard/content/create?draft=${data.draftId}`);
@@ -109,6 +176,8 @@ export function ContentCreateClient({ workspaceId, userId, userRole }: ContentCr
         const mockContent = `# ${mockTitle}\n\nThis is an AI-generated ${typeLabel.toLowerCase()} for ${channelLabel}.\n\n## Key Points\n\n- ${prompt}\n- Engaging content tailored for your audience\n- Optimized for ${channelLabel}\n\n## Details\n\nYour AI-generated content about "${prompt}" would appear here. Connect your Anthropic API key to generate real content with Claude AI.\n\n## Call to Action\n\nReady to get started? Try our platform free for 15 days.`;
         setTitle(mockTitle);
         setContent(mockContent);
+        // Auto-score the mock content
+        handleScore(mockContent);
       }
     } catch {
       setGenerateError('Failed to generate content. Please try again.');
@@ -247,6 +316,69 @@ export function ContentCreateClient({ workspaceId, userId, userRole }: ContentCr
               </div>
             </div>
           </div>
+
+          {/* Autoresearch Score Badges */}
+          {(scores || isScoring || isImproving) && (
+            <div className="flex flex-wrap items-center gap-2" data-testid="autoresearch-scores">
+              {isScoring && (
+                <Badge variant="outline" className="gap-1.5 text-xs">
+                  <Loader2 className="size-3 animate-spin" />
+                  Scoring...
+                </Badge>
+              )}
+              {compositeScore !== null && !isScoring && (
+                <Badge
+                  variant="outline"
+                  className={`text-xs font-semibold ${
+                    compositeScore >= 80
+                      ? 'border-emerald-500/50 text-emerald-500'
+                      : compositeScore >= 60
+                        ? 'border-amber-500/50 text-amber-500'
+                        : 'border-red-500/50 text-red-500'
+                  }`}
+                  data-testid="composite-score"
+                >
+                  <TrendingUp className="size-3 mr-1" />
+                  Overall: {compositeScore}/100
+                </Badge>
+              )}
+              {scores && !isScoring && scores.map((s) => (
+                <Badge
+                  key={s.name}
+                  variant="outline"
+                  className={`text-xs ${
+                    s.score >= 80
+                      ? 'border-emerald-500/30 text-emerald-400'
+                      : s.score >= 60
+                        ? 'border-amber-500/30 text-amber-400'
+                        : 'border-red-500/30 text-red-400'
+                  }`}
+                  data-testid={`score-${s.name}`}
+                >
+                  {s.name.replace(/_/g, ' ')}: {s.score}
+                </Badge>
+              ))}
+              {content && !isScoring && !isImproving && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAutoImprove}
+                  disabled={!prompt.trim()}
+                  className="text-xs gap-1.5 border-brand-orange/30 text-brand-orange hover:bg-brand-orange/10"
+                  data-testid="auto-improve-button"
+                >
+                  <Zap className="size-3" />
+                  Auto-Improve
+                </Button>
+              )}
+              {isImproving && (
+                <Badge variant="outline" className="gap-1.5 text-xs text-brand-orange border-brand-orange/30">
+                  <Loader2 className="size-3 animate-spin" />
+                  Improving...
+                </Badge>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}

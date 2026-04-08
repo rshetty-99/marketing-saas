@@ -24,9 +24,10 @@ export async function GET(req: NextRequest) {
     const params = blogListQuerySchema.safeParse(Object.fromEntries(searchParams));
     if (!params.success) return NextResponse.json({ error: params.error.flatten() }, { status: 400 });
 
-    // For public access, we need a workspaceId from query param
-    const workspaceId = searchParams.get('workspaceId');
-    if (!workspaceId) return NextResponse.json({ error: 'workspaceId required for public access' }, { status: 400 });
+    // For public access, use env var or default workspace ID
+    const workspaceId = searchParams.get('workspaceId')
+      ?? process.env.NEXT_PUBLIC_BLOG_WORKSPACE_ID
+      ?? 'org_3BrAQY4IeIQF7yjqSP74lqSF2jT';
 
     const posts = await listPublishedPosts(workspaceId, {
       category: params.data.category,
