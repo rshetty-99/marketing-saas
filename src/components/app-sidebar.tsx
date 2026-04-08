@@ -76,6 +76,10 @@ import {
   ArrowDownToLine,
   Newspaper,
   Sparkles,
+  Rocket,
+  Briefcase,
+  MailPlus,
+  ScanSearch,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -143,6 +147,11 @@ const NAV_SECTIONS: NavSection[] = [
       { title: 'Influencers', url: '/dashboard/influencers', icon: Star, permission: 'content.view' },
       { title: 'Advocacy', url: '/dashboard/advocacy', icon: Megaphone, permission: 'content.view' },
       { title: 'RSS Feeds', url: '/dashboard/rss-feeds', icon: Rss, permission: 'content.create_edit_drafts' },
+      { title: 'Website Audit', url: '/dashboard/website-audit', icon: ScanSearch, permission: 'analytics.view_dashboard' },
+      { title: 'Calendar Planner', url: '/dashboard/calendar-planner', icon: CalendarDays, permission: 'content.create_edit_drafts' },
+      { title: 'Launch Playbook', url: '/dashboard/launch-playbook', icon: Rocket, permission: 'content.create_edit_drafts' },
+      { title: 'Proposals', url: '/dashboard/proposals', icon: Briefcase, permission: 'content.create_edit_drafts' },
+      { title: 'Email Sequences', url: '/dashboard/email-sequences', icon: MailPlus, permission: 'email.create_campaigns' },
     ],
   },
   {
