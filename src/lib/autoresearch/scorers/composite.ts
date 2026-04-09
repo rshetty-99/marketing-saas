@@ -9,10 +9,12 @@ import { scoreBrandVoice } from './brand-voice';
 import { scorePlatformCompliance } from './platform';
 import { scoreEmailSubject, scoreEmailBody } from './email';
 import { scoreConversionCopy } from './conversion';
+import { scoreGeo } from './geo-scorer';
 
 /** Registry of all available scorers */
 export const SCORER_FUNCTIONS: Record<string, (content: string, context: ScorerContext) => Promise<ScoreResult>> = {
   seo: scoreSEO,
+  geo: scoreGeo,
   readability: scoreReadability,
   brand_voice: scoreBrandVoice,
   platform: scorePlatformCompliance,

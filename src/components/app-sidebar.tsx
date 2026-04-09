@@ -80,6 +80,7 @@ import {
   Briefcase,
   MailPlus,
   ScanSearch,
+  Brain,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -132,6 +133,7 @@ const NAV_SECTIONS: NavSection[] = [
       { title: 'Reports', url: '/dashboard/reports', icon: FileText, permission: 'analytics.view_dashboard' },
       { title: 'Report Builder', url: '/dashboard/report-builder', icon: FileBarChart, permission: 'analytics.view_dashboard' },
       { title: 'SEO', url: '/dashboard/seo', icon: Search, permission: 'seo.view_reports' },
+      { title: 'GEO', url: '/dashboard/geo', icon: Brain, permission: 'seo.view_reports' },
       { title: 'Email', url: '/dashboard/email', icon: Mail, permission: 'email.view_analytics' },
       { title: 'Leads', url: '/dashboard/leads', icon: Users, permission: 'leads.create' },
       { title: 'Forms', url: '/dashboard/forms', icon: FormInput, permission: 'leads.create' },

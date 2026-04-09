@@ -12,20 +12,20 @@ export const USE_CASE_PRESETS: Record<string, UseCasePreset> = {
   // ── Content Generation ─────────────────────────────────
   blog_post: {
     name: 'Blog Post',
-    description: 'Long-form blog content optimized for SEO and readability',
+    description: 'Long-form blog content optimized for SEO, GEO, and readability',
     defaultThreshold: 80,
     defaultMaxIterations: 3,
-    scorerNames: ['seo', 'readability', 'brand_voice', 'platform'],
-    scorerWeights: [0.35, 0.25, 0.20, 0.20],
+    scorerNames: ['seo', 'geo', 'readability', 'brand_voice', 'platform'],
+    scorerWeights: [0.25, 0.20, 0.20, 0.15, 0.20],
     tierLimits: { starter: 1, growth: 2, agency: 3, agency_pro: 5, white_label: 5 },
   },
   linkedin_post: {
     name: 'LinkedIn Post',
-    description: 'Professional social post for LinkedIn',
+    description: 'Professional social post for LinkedIn with GEO optimization',
     defaultThreshold: 78,
     defaultMaxIterations: 3,
-    scorerNames: ['brand_voice', 'platform', 'readability'],
-    scorerWeights: [0.40, 0.35, 0.25],
+    scorerNames: ['brand_voice', 'geo', 'platform', 'readability'],
+    scorerWeights: [0.35, 0.15, 0.30, 0.20],
     tierLimits: { starter: 1, growth: 2, agency: 3, agency_pro: 5, white_label: 5 },
   },
   twitter_post: {
@@ -66,11 +66,11 @@ export const USE_CASE_PRESETS: Record<string, UseCasePreset> = {
   },
   youtube_description: {
     name: 'YouTube Description',
-    description: 'Video description with timestamps and links',
+    description: 'Video description with timestamps, links, and GEO optimization',
     defaultThreshold: 75,
     defaultMaxIterations: 2,
-    scorerNames: ['seo', 'platform', 'readability'],
-    scorerWeights: [0.35, 0.35, 0.30],
+    scorerNames: ['seo', 'geo', 'platform', 'readability'],
+    scorerWeights: [0.30, 0.15, 0.30, 0.25],
     tierLimits: { starter: 1, growth: 2, agency: 3, agency_pro: 3, white_label: 3 },
   },
 
@@ -97,11 +97,11 @@ export const USE_CASE_PRESETS: Record<string, UseCasePreset> = {
   // ── Landing Pages & Ads ────────────────────────────────
   landing_page: {
     name: 'Landing Page Copy',
-    description: 'Conversion-optimized page content',
+    description: 'Conversion-optimized page content with GEO',
     defaultThreshold: 80,
     defaultMaxIterations: 3,
-    scorerNames: ['conversion', 'readability', 'seo', 'brand_voice'],
-    scorerWeights: [0.35, 0.20, 0.25, 0.20],
+    scorerNames: ['conversion', 'readability', 'seo', 'geo', 'brand_voice'],
+    scorerWeights: [0.30, 0.15, 0.20, 0.15, 0.20],
     tierLimits: { starter: 1, growth: 2, agency: 3, agency_pro: 5, white_label: 5 },
   },
   ad_copy: {
@@ -149,12 +149,12 @@ export const USE_CASE_PRESETS: Record<string, UseCasePreset> = {
 
   // ── SEO Content Brief ──────────────────────────────────
   seo_brief: {
-    name: 'SEO Content Brief',
-    description: 'Content brief optimized for keyword targeting',
+    name: 'SEO + GEO Content Brief',
+    description: 'Content brief optimized for search AND AI citability',
     defaultThreshold: 80,
     defaultMaxIterations: 2,
-    scorerNames: ['seo', 'readability'],
-    scorerWeights: [0.65, 0.35],
+    scorerNames: ['seo', 'geo', 'readability'],
+    scorerWeights: [0.45, 0.25, 0.30],
     tierLimits: { starter: 1, growth: 2, agency: 3, agency_pro: 3, white_label: 3 },
   },
 };
