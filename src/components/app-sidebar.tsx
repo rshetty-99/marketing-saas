@@ -81,6 +81,8 @@ import {
   MailPlus,
   ScanSearch,
   Brain,
+  Bell,
+  Puzzle,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -154,6 +156,8 @@ const NAV_SECTIONS: NavSection[] = [
       { title: 'Launch Playbook', url: '/dashboard/launch-playbook', icon: Rocket, permission: 'content.create_edit_drafts' },
       { title: 'Proposals', url: '/dashboard/proposals', icon: Briefcase, permission: 'content.create_edit_drafts' },
       { title: 'Email Sequences', url: '/dashboard/email-sequences', icon: MailPlus, permission: 'email.create_campaigns' },
+      { title: 'Platform Alerts', url: '/dashboard/platform-alerts', icon: Bell, permission: 'analytics.view_dashboard' },
+      { title: 'Interactive Content', url: '/dashboard/interactive-content', icon: Puzzle, permission: 'content.create_edit_drafts' },
     ],
   },
   {
