@@ -438,27 +438,166 @@ CRM webhook delivery, and scheduled publishing will not have proper retry logic.
 
 ---
 
-## Summary: What's Needed to Go Live
+## Go-Live Checklist — Complete Production Readiness
 
-### Critical Path (must-have for launch)
-1. `ANTHROPIC_API_KEY` — real AI content generation
-2. `STRIPE_SECRET_KEY` + `STRIPE_PUBLISHABLE_KEY` — real billing
-3. `SENDGRID_API_KEY` or `RESEND_API_KEY` — real email sending
-4. At least 2 social platform OAuth apps (LinkedIn + Instagram recommended)
-5. Enable Cloud Function schedules (see section above)
-6. Create Cloud Tasks queues (see section above)
-7. Custom domain + update OAuth redirect URIs
+*Last updated: 2026-04-14*
+*Platform: 219 pages, 144 API routes, 0 TypeScript errors, all code committed.*
 
-### Nice-to-have for launch
-8. `DATAFORSEO_LOGIN` — real SEO keyword data
-9. `VERTEX_AI_PROJECT_ID` — real image generation
-10. Firebase Secret Manager for token encryption keys
-11. BigQuery dataset for long-term analytics
-12. `BRAND24_API_KEY` — premium social listening ($79/mo)
-13. `CLEARBIT_API_KEY` or `APOLLO_API_KEY` — lead enrichment
-14. `SHORT_LINK_DOMAIN` — custom short-link domain for branded links
+---
 
-### Total env vars needed: ~25 keys across 12 services
+### Tier 1: MUST HAVE (Launch Blockers)
+
+These items MUST be completed before any user touches production.
+
+| # | Item | Type | Effort | Status |
+|---|------|------|--------|--------|
+| 1 | **`ANTHROPIC_API_KEY`** | Credential | 5 min | [ ] |
+|   | Enables: AI content generation, Cortex AI command center, autoresearch quality loop, brand voice sample generation, voice analysis. Without it, all AI features return mock data. | | | |
+|   | Setup: Sign up at console.anthropic.com → Create API key → Add to `.env.local` | | | |
+| 2 | **`STRIPE_SECRET_KEY` + `STRIPE_PUBLISHABLE_KEY`** | Credential | 30 min | [ ] |
+|   | Enables: Real billing, subscription management, trial enforcement, usage-based billing. | | | |
+|   | Setup: Create Stripe account → Create 5 products (Starter $49, Growth $149, Agency $399, Agency Pro $799, White-Label $1499) → Create prices (monthly + annual) → Copy keys to `.env.local` | | | |
+| 3 | **`SENDGRID_API_KEY` or `RESEND_API_KEY`** | Credential | 15 min | [ ] |
+|   | Enables: Email campaigns, sequences, notifications, report delivery, contact form, unsubscribe handling. | | | |
+|   | Setup: Create SendGrid/Resend account → Verify sending domain (SPF, DKIM, DMARC) → Create API key → Add to `.env.local` | | | |
+| 4 | **Social platform OAuth apps** (min: LinkedIn + Instagram) | Config | 2 hours | [ ] |
+|   | Enables: Real social publishing, analytics pull, token refresh. Each platform requires a developer app. | | | |
+|   | Platforms and their developer consoles: | | | |
+|   | - LinkedIn: https://linkedin.com/developers/apps | | | |
+|   | - Twitter/X: https://developer.twitter.com/portal | | | |
+|   | - Instagram/Facebook: https://developers.facebook.com/apps (one app handles both) | | | |
+|   | - TikTok: https://developers.tiktok.com | | | |
+|   | - YouTube/Google: https://console.cloud.google.com (Google OAuth) | | | |
+|   | - Pinterest: https://developers.pinterest.com | | | |
+|   | - Google Business: https://console.cloud.google.com | | | |
+|   | For each: Create app → Get Client ID + Secret → Set redirect URL to `https://yourdomain.com/api/social/callback/{platform}` → Add to `.env.local` | | | |
+| 5 | **Cloud Functions → `onSchedule`** | Config | 2 hours | [ ] |
+|   | Enables: Automated trial enforcement, token refresh, metrics polling, approval escalation, calendar notifications, ranking tracking, content decay monitoring. | | | |
+|   | 7 functions to convert (see "Cloud Functions" section above for exact cron expressions). | | | |
+|   | Steps: Enable Cloud Scheduler API → Update `functions/src/index.ts` → Redeploy with `firebase deploy --only functions` | | | |
+| 6 | **Cloud Tasks queues** | Config | 1 hour | [ ] |
+|   | Enables: Reliable bulk email sends, CRM webhook delivery, scheduled publishing retry, lead enrichment batches, DAM auto-tagging, CSV import processing. | | | |
+|   | 4 queues to create (see "Cloud Tasks" section above for gcloud commands). | | | |
+|   | Steps: Enable Cloud Tasks API → Create 4 queues → Install `@google-cloud/tasks` in functions → Wire task creation in code | | | |
+| 7 | **Custom domain + SSL** | Config | 1 hour | [ ] |
+|   | Enables: Professional URL (app.youragency.com), valid SSL, OAuth redirect URLs that work. | | | |
+|   | Steps: Point domain to Firebase Hosting → Update `NEXT_PUBLIC_APP_URL` → Update `OAUTH_REDIRECT_BASE` → Update all Clerk redirect URLs → Update social OAuth redirect URLs | | | |
+| 8 | **Clerk production instance** | Config | 30 min | [ ] |
+|   | Enables: Production auth without "Development mode" badge, real email verification, production webhooks. | | | |
+|   | Steps: Clerk dashboard → Switch to Production → Copy new `CLERK_SECRET_KEY` and `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` → Update `.env.local` → Update webhook endpoints | | | |
+
+**Estimated total: 6-8 hours of config work**
+
+---
+
+### Tier 2: SHOULD HAVE (Pre-Launch Quality)
+
+Complete before inviting paying customers.
+
+| # | Item | Type | Effort | Status |
+|---|------|------|--------|--------|
+| 9 | **Firebase Secret Manager** for encryption keys | Config | 30 min | [ ] |
+|   | Move AES-256-GCM token encryption key from dev fallback to Secret Manager. Production OAuth tokens must not use the hardcoded dev key. | | | |
+| 10 | **`DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD`** | Credential | 10 min | [ ] |
+|   | Real SEO keyword data (search volume, difficulty, CPC). Currently returns mock keyword data. From $50/mo. | | | |
+| 11 | **`VERTEX_AI_PROJECT_ID` + `VERTEX_AI_LOCATION` + `VERTEX_AI_NB2_MODEL_ID`** | Credential | 15 min | [ ] |
+|   | Real AI image generation via Nano Banana 2. Currently returns mock images. | | | |
+| 12 | **Firestore composite indexes** | Config | 30 min | [ ] |
+|   | Several queries use in-memory sorting to avoid index requirements. Deploy proper composite indexes for production performance: `status + createdAt` on content_drafts, dam_assets, blog_posts, email_campaigns. | | | |
+| 13 | **Firestore security rules load test** | Review | 1 hour | [ ] |
+|   | Rules are written and enforce workspace scoping, client isolation, and RBAC. Test with Firebase Rules emulator under concurrent load. | | | |
+| 14 | **Email domain authentication** (SPF, DKIM, DMARC) | Config | 1 hour | [ ] |
+|   | Required for email deliverability. Without these DNS records, campaigns land in spam. | | | |
+| 15 | **Error monitoring (Sentry)** | Config | 30 min | [ ] |
+|   | Install `@sentry/nextjs` for production error tracking. The platform has try/catch everywhere but errors need to be reported and triaged. | | | |
+| 16 | **Backup & disaster recovery** | Config | 1 hour | [ ] |
+|   | Enable Firestore point-in-time recovery. Configure daily exports to Cloud Storage. | | | |
+
+**Estimated total: 4-5 hours**
+
+---
+
+### Tier 3: NICE TO HAVE (Post-Launch)
+
+Add these after launch to enhance the platform.
+
+| # | Item | Type | Effort | Status |
+|---|------|------|--------|--------|
+| 17 | **BigQuery for analytics** | Config | 2 hours | [ ] |
+|   | Stream Firestore data to BigQuery for long-term analytics. Firestore works but doesn't scale past ~100K analytics records efficiently. | | | |
+| 18 | **`BRAND24_API_KEY`** | Credential | 10 min | [ ] |
+|   | Premium social listening ($79/mo). Currently DIY with mock data. | | | |
+| 19 | **`CLEARBIT_API_KEY` or `APOLLO_API_KEY`** | Credential | 10 min | [ ] |
+|   | Real lead enrichment (company, job title from email). Currently mock enrichment. | | | |
+| 20 | **`UNSPLASH_ACCESS_KEY` + `PEXELS_API_KEY`** | Credential | 10 min | [ ] |
+|   | Real stock photo search. Currently placeholder images. Free tiers available. | | | |
+| 21 | **`SHORT_LINK_DOMAIN`** | Config | 30 min | [ ] |
+|   | Custom branded short links (e.g., `go.youragency.com/xyz`). Currently local links. | | | |
+| 22 | **Redis for rate limiting** | Migration | 2 hours | [ ] |
+|   | Current rate limiters (blog analytics, Cortex concurrency, form submissions) are in-memory — reset on server restart. Redis makes them persistent. | | | |
+| 23 | **CDN for media assets** | Config | 1 hour | [ ] |
+|   | Firebase Storage serves files but Cloudflare/CloudFront improves global load times for DAM assets. | | | |
+| 24 | **Monitoring dashboard (Grafana)** | Config | 2 hours | [ ] |
+|   | Cloud Functions logs, Firestore metrics, API latency, error rates in one dashboard. | | | |
+
+---
+
+### Tier 4: FUTURE ENHANCEMENTS (Post-Launch Roadmap)
+
+These require new code, not just configuration.
+
+| # | Item | Description | Priority |
+|---|------|-------------|----------|
+| 25 | **Share of Voice tracking** | Real citation monitoring across ChatGPT, Perplexity, Claude (requires scraping or Brandwatch) | Medium |
+| 26 | **Image Editing UI** | Canvas-based crop, filter, text overlay for generated images | Medium |
+| 27 | **Website Tracking Pixel** | First-party analytics pixel for full-funnel attribution | Medium |
+| 28 | **GA4 Integration** | Import Google Analytics conversion path data | Low |
+| 29 | **Visual Workflow Builder UI** | Drag-and-drop automation editor (backend built, frontend needed) | Medium |
+| 30 | **Real-time Duplicate Detection** | Fuzzy matching on lead import | Low |
+| 31 | **Reddit/Discord/WhatsApp monitoring** | Dark social brand monitoring | Low |
+| 32 | **Mobile companion app** | React Native for approvals, notifications, quick content | Low |
+| 33 | **Cortex voice output** | Text-to-speech readback of Cortex responses | Low |
+| 34 | **Multi-language dashboard** | i18n for non-English agencies | Low |
+
+---
+
+### Complete Credentials Reference
+
+| Service | Env Var(s) | Cost | Tier |
+|---|---|---|---|
+| Anthropic (Claude) | `ANTHROPIC_API_KEY` | Pay per token (~$3/MTok Sonnet) | Must Have |
+| Stripe | `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY` | 2.9% + 30¢/txn | Must Have |
+| SendGrid/Resend | `SENDGRID_API_KEY` or `RESEND_API_KEY` | Free up to 100/day | Must Have |
+| Clerk | `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Free up to 10K MAU | Must Have |
+| LinkedIn | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET` | Free | Must Have |
+| Twitter/X | `TWITTER_CLIENT_ID`, `TWITTER_CLIENT_SECRET` | Free (Basic API) | Must Have |
+| Meta (IG+FB) | `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET` | Free | Must Have |
+| TikTok | `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` | Free | Should Have |
+| Google (YT+Biz) | `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET` | Free | Should Have |
+| Pinterest | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET` | Free | Should Have |
+| DataForSEO | `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` | From $50/mo | Should Have |
+| Vertex AI | `VERTEX_AI_PROJECT_ID`, `VERTEX_AI_LOCATION`, `VERTEX_AI_NB2_MODEL_ID` | Pay per image | Should Have |
+| Brand24 | `BRAND24_API_KEY` | $79/mo | Nice to Have |
+| Clearbit/Apollo | `CLEARBIT_API_KEY` or `APOLLO_API_KEY` | Pay per lookup | Nice to Have |
+| Unsplash | `UNSPLASH_ACCESS_KEY` | Free (50 req/hr) | Nice to Have |
+| Pexels | `PEXELS_API_KEY` | Free (200 req/hr) | Nice to Have |
+
+**Total: ~30 env vars across 16 services**
+
+---
+
+### Go-Live Timeline
+
+| Phase | Items | Time | When |
+|---|---|---|---|
+| **Day 1** | Tier 1 items 1-3 (API keys) | 1 hour | Unblocks AI, billing, email |
+| **Day 1** | Tier 1 items 7-8 (domain + Clerk) | 1.5 hours | Unblocks auth + URL |
+| **Day 2** | Tier 1 item 4 (OAuth apps) | 2 hours | Unblocks social publishing |
+| **Day 2** | Tier 1 items 5-6 (Cloud Functions + Tasks) | 3 hours | Unblocks automation |
+| **Day 3** | Tier 2 items 9-16 | 4-5 hours | Quality + security |
+| **Post-launch** | Tier 3 items 17-24 | Ongoing | Enhancements |
+
+**Total: 3 days to full production readiness**
 
 ---
 
